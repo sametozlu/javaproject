@@ -85,17 +85,15 @@ flowchart LR
 
 
 
-### Local (H2)
+### Local (H2) — en kolay
 
-
+**Windows:** `BASLA.bat` çift tık · veya `.\baslat.ps1`
 
 ```bash
-
-copy .env.example .env
-
 .\mvnw.cmd spring-boot:run
-
 ```
+
+Detay: [KURULUM.md](KURULUM.md)
 
 
 
