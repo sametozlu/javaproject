@@ -1816,6 +1816,8 @@ body.dark-theme .order-status.CANCELLED { background: rgba(248,113,113,0.15); co
 
 .profile-content p { margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem; }
 .profile-content strong { color: var(--text); }
+.profile-form { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.profile-form .hint { font-weight: 400; color: var(--text-muted); font-size: 0.8rem; }
 
 /* ── Toast ── */
 .toast {

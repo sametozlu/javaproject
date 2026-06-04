@@ -1,5 +1,7 @@
 HELP.md
 target/
+scripts/node_modules/
+scripts/package-lock.json
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

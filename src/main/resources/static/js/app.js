@@ -760,12 +760,36 @@ async function openProfile() {
         const p = await api('/api/users/me');
         $('#profileContent').innerHTML = `
             <div class="profile-card">
-                <p><strong>Ad:</strong> ${escapeHtml(p.fullName)}</p>
                 <p><strong>E-posta:</strong> ${escapeHtml(p.email)}</p>
                 <p><strong>Rol:</strong> <span class="role-badge">${p.role}</span></p>
                 <p><strong>Sipariş sayısı:</strong> ${p.orderCount}</p>
                 <p><strong>Üyelik:</strong> ${new Date(p.createdAt).toLocaleDateString('tr-TR')}</p>
-            </div>`;
+            </div>
+            <form id="profileForm" class="auth-form profile-form">
+                <label>Ad Soyad<input type="text" name="fullName" value="${escapeHtml(p.fullName)}" required minlength="2"></label>
+                <label>Mevcut şifre <span class="hint">(şifre değiştirirken)</span><input type="password" name="currentPassword" autocomplete="current-password"></label>
+                <label>Yeni şifre<input type="password" name="newPassword" minlength="6" autocomplete="new-password"></label>
+                <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+            </form>`;
+        $('#profileForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const body = { fullName: fd.get('fullName')?.trim() };
+            const newPassword = fd.get('newPassword');
+            const currentPassword = fd.get('currentPassword');
+            if (newPassword) {
+                body.newPassword = newPassword;
+                body.currentPassword = currentPassword || '';
+            }
+            try {
+                const updated = await api('/api/users/me', { method: 'PUT', body: JSON.stringify(body) });
+                state.user = { ...state.user, fullName: updated.fullName };
+                localStorage.setItem(STORAGE_USER, JSON.stringify(state.user));
+                updateAuthUI();
+                toast('Profil güncellendi');
+                $('#profileModal').close();
+            } catch (err) { toast(err.message, 'error'); }
+        };
         $('#profileModal').showModal();
     } catch (e) { toast(e.message, 'error'); }
 }

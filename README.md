@@ -9,6 +9,8 @@
 
 **Repo:** https://github.com/sametozlu/javaproject
 
+**Canlı demo (Render):** https://shopflow-api.onrender.com — [Deploy rehberi](docs/DEPLOY.md)
+
 
 
 Production-style e-commerce platform built with **Spring Boot 3** — REST API, JWT security, Flyway migrations, PostgreSQL, modern web UI, Docker, and CI. Designed for **portfolio and GitHub**.
@@ -17,25 +19,15 @@ Production-style e-commerce platform built with **Spring Boot 3** — REST API, 
 
 ## Screenshots
 
-
-
-| Ana Sayfa | Ürün Detay | Sepet |
-
-|-----------|------------|-------|
-
-| Hero slider, kategori kartları, ürün grid | Tam sayfa detay, yorumlar, benzer ürünler | Adres seçimi, kupon, kargo progress |
-
-
+| Ana Sayfa | Ürün Detay |
+|-----------|------------|
+| ![Ana sayfa](docs/screenshots/home.png) | ![Ürün detay](docs/screenshots/product.png) |
 
 | Admin Panel | Swagger |
-
 |-------------|---------|
+| ![Admin](docs/screenshots/admin.png) | ![Swagger](docs/screenshots/swagger.png) |
 
-| Stats, grafik, audit log, görsel upload | REST API dokümantasyonu |
-
-
-
-> Uygulamayı çalıştırıp ekran görüntüsü almak için: http://localhost:8080 — `docs/screenshots/` klasörüne ekleyebilirsin.
+Yeniden üretmek için: `.\scripts\capture-screenshots.ps1` (localhost:8080 çalışıyor olmalı).
 
 
 
@@ -142,13 +134,11 @@ docker compose up -d postgres redis mailhog
 
 ### Deploy (Render)
 
+1. Push repo to GitHub  
+2. [Render](https://render.com) → **New Blueprint** → `render.yaml`  
+3. Deploy bitince: **https://shopflow-api.onrender.com** (soğuk start ~1–2 dk)
 
-
-1. Push repo to GitHub
-
-2. Connect to [Render](https://render.com) — use `render.yaml` blueprint
-
-3. Set `JWT_SECRET` in dashboard
+Ayrıntılı adımlar: **[docs/DEPLOY.md](docs/DEPLOY.md)**
 
 
 
@@ -169,6 +159,8 @@ docker compose up -d postgres redis mailhog
 | POST | `/api/auth/forgot-password` | Public | Password reset email |
 
 | POST | `/api/auth/reset-password` | Public | Set new password |
+
+| GET/PUT | `/api/users/me` | User | Profil görüntüle / güncelle (ad, şifre) |
 
 | GET | `/api/products` | Public | Search (`q`, `categoryId`, `minPrice`, `maxPrice`) |
 
