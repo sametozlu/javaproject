@@ -40,6 +40,7 @@ public class SecurityConfig {
             "/js/**",
             "/uploads/**",
             "/api/auth/**",
+            "/api/payments/config",
             "/api/coupons/validate",
             "/api/products/*/reviews",
             "/actuator/health",

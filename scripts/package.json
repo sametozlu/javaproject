@@ -1,1 +1,12 @@
-﻿{"name":"shopflow-screenshots","private":true,"type":"module","dependencies":{"playwright":"^1.49.0"}}
+﻿{
+  "name": "shopflow-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "node e2e-smoke.mjs",
+    "screenshots": "node capture-screenshots.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

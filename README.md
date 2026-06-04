@@ -6,6 +6,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green)]()
 [![License](https://img.shields.io/badge/License-MIT-blue)]()
 [![CI](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml/badge.svg)](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml)
+[![E2E](https://github.com/sametozlu/javaproject/actions/workflows/e2e.yml/badge.svg)](https://github.com/sametozlu/javaproject/actions/workflows/e2e.yml)
 
 **Repo:** https://github.com/sametozlu/javaproject
 
@@ -41,7 +42,7 @@ Yeniden üretmek için: `.\scripts\capture-screenshots.ps1` (localhost:8080 çal
 
 | **API** | JWT auth, roles, pagination, search, reviews, wishlist |
 
-| **Commerce** | Cart, checkout, coupons, payment simulation, address book |
+| **Commerce** | Cart, checkout, coupons, demo + **Stripe sandbox** ödeme, address book |
 
 | **Orders** | Optimistic stock locking, shipping address, HTML emails |
 
@@ -114,7 +115,9 @@ copy .env.example .env
 
 **Demo admin:** `admin@shop.com` / `admin123` (demo adres seeded)
 
-**Demo ödeme (simülasyon):** Sepet → Ödemeye Geç → kart formu. Başarı: `4242 4242 4242 4242`; red: `4000 0000 0000 0002` veya “Zorla başarısız”. Gerçek PSP yok; `POST /api/orders/{id}/pay` ile backend onaylar.
+**Ödeme:** Varsayılan **demo simülasyon** (4242… başarı, 4000… red). `.env` içine Stripe test anahtarları eklersen ödeme modalında **Stripe Sandbox** sekmesi açılır (`POST …/pay/stripe-intent` + Stripe.js).
+
+**Sipariş e-postaları:** Admin siparişi `SHIPPED` / `DELIVERED` yapınca kullanıcıya HTML mail (MailHog / SMTP).
 
 
 
@@ -226,9 +229,11 @@ Copy `.env.example` to `.env`. Key variables:
 
 ```
 
+**E2E (Playwright):** Uygulama ayaktayken `cd scripts && npm install && npm run e2e` — veya GitHub Actions `e2e.yml`.
 
 
-Includes auth, product listing, and cart→checkout flow with address.
+
+Includes auth, product listing, cart→checkout, payment, and admin ship status.
 
 
 

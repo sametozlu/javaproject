@@ -136,11 +136,13 @@ public class OrderService {
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new BadRequestException("Cannot update a cancelled order");
         }
+        OrderStatus previous = order.getStatus();
         order.setStatus(request.status());
         if (request.status() == OrderStatus.SHIPPED && (order.getTrackingNumber() == null || order.getTrackingNumber().isBlank())) {
             order.setTrackingNumber("SF" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
         }
         auditService.log("ORDER_STATUS_UPDATED", "Order", id, request.status().name());
+        notifyOrderStatusChange(order, previous, request.status());
         return orderMapper.toResponse(order);
     }
 
@@ -163,5 +165,18 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         auditService.log("ORDER_CANCELLED", "Order", id, null);
         return orderMapper.toResponse(order);
+    }
+
+    private void notifyOrderStatusChange(Order order, OrderStatus previous, OrderStatus next) {
+        if (previous == next) {
+            return;
+        }
+        String email = order.getUser().getEmail();
+        if (next == OrderStatus.SHIPPED && previous != OrderStatus.SHIPPED) {
+            emailService.sendOrderShipped(email, order.getId(), order.getTrackingNumber());
+        }
+        if (next == OrderStatus.DELIVERED && previous != OrderStatus.DELIVERED) {
+            emailService.sendOrderDelivered(email, order.getId());
+        }
     }
 }

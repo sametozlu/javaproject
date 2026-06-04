@@ -1819,6 +1819,13 @@ body.dark-theme .order-status.CANCELLED { background: rgba(248,113,113,0.15); co
 .profile-form { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .profile-form .hint { font-weight: 400; color: var(--text-muted); font-size: 0.8rem; }
 
+.stripe-panel { margin-bottom: 1rem; padding: 1rem; background: var(--surface-elevated, #f8f9fb); border-radius: 10px; border: 1px solid var(--border); }
+.stripe-panel-hint { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.75rem; }
+.stripe-panel-hint code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+#stripe-card-element { padding: 12px 0; }
+.stripe-errors { color: #dc2626; font-size: 0.85rem; min-height: 1.25rem; margin-top: 0.5rem; }
+#demoPaymentPanel.hidden, #stripePaymentPanel.hidden { display: none !important; }
+
 /* ── Toast ── */
 .toast {
     position: fixed;

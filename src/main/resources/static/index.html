@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css?v=14">
+    <link rel="stylesheet" href="/css/styles.css?v=15">
 </head>
 <body>
 <div class="top-bar">
@@ -471,7 +471,7 @@
         <div class="payment-modal-top-inner">
             <span class="payment-secure-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14h2v2h-2v-2zm0-8h2v6h-2V7z"/></svg>
-                Güvenli ödeme · Demo
+                Güvenli ödeme
             </span>
             <h3>Ödeme</h3>
             <p class="payment-order-ref">
@@ -488,13 +488,24 @@
             <span class="payment-step-line"></span>
             <span class="payment-step">Onay</span>
         </div>
-        <div class="payment-methods">
-            <label class="payment-method active">
-                <input type="radio" name="payMethod" value="card" checked>
+        <div class="payment-methods" id="paymentMethods">
+            <label class="payment-method active" id="payMethodDemoLabel">
+                <input type="radio" name="payMethod" value="demo" checked>
+                <span class="payment-method-icon">🧪</span>
+                <span>Demo simülasyon</span>
+            </label>
+            <label class="payment-method hidden" id="payMethodStripeLabel">
+                <input type="radio" name="payMethod" value="stripe">
                 <span class="payment-method-icon">💳</span>
-                <span>Kredi / Banka Kartı</span>
+                <span>Stripe Sandbox</span>
             </label>
         </div>
+        <div id="stripePaymentPanel" class="stripe-panel hidden">
+            <p class="stripe-panel-hint">Stripe test kartı: <code>4242 4242 4242 4242</code> · AA/YY gelecek · CVC herhangi</p>
+            <div id="stripe-card-element"></div>
+            <div id="stripe-card-errors" class="stripe-errors" role="alert"></div>
+        </div>
+        <div id="demoPaymentPanel">
         <div class="card-preview" id="cardPreview">
             <div class="card-preview-bg"></div>
             <div class="card-preview-top">
@@ -550,17 +561,18 @@
                 </label>
             </div>
         </div>
-        <label class="payment-sim-toggle">
+        <label class="payment-sim-toggle" id="simulateFailWrap">
             <input type="checkbox" id="simulatePaymentFail">
             <span class="payment-sim-switch"></span>
             <span>Zorla başarısız ödeme (test)</span>
         </label>
+        </div>
         <button type="submit" class="btn btn-primary btn-block btn-lg payment-submit" id="confirmPaymentBtn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
             <span>Ödemeyi Onayla</span>
             <span class="payment-submit-amount" id="paymentSubmitAmount"></span>
         </button>
-        <p class="payment-footer-note">Bu bir demo ortamıdır. Gerçek ödeme alınmaz.</p>
+        <p class="payment-footer-note" id="paymentFooterNote">Demo modunda gerçek ödeme alınmaz. Stripe anahtarı tanımlıysa sandbox ödeme kullanılabilir.</p>
     </form>
 </dialog>
 
@@ -675,6 +687,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="/js/app.js?v=14"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/app.js?v=15"></script>
 </body>
 </html>

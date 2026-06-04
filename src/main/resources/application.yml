@@ -29,6 +29,10 @@ app:
   rate-limit:
     auth-max: 10
     window-ms: 60000
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+    currency: try
 
 management:
   endpoints:

@@ -37,6 +37,29 @@ public class EmailService {
     }
 
     @Async
+    public void sendOrderShipped(String to, Long orderId, String trackingNumber) {
+        String html = baseTemplate(
+                "Siparişiniz Kargoda",
+                "Merhaba!",
+                "Siparişiniz kargoya verildi. Takip numaranızla gönderinizi izleyebilirsiniz.",
+                detailRow("Sipariş No", "#" + orderId)
+                        + detailRow("Takip No", escape(trackingNumber != null ? trackingNumber : "—"))
+        );
+        sendHtml(to, "ShopFlow — Kargoya Verildi #" + orderId, html);
+    }
+
+    @Async
+    public void sendOrderDelivered(String to, Long orderId) {
+        String html = baseTemplate(
+                "Siparişiniz Teslim Edildi",
+                "Teşekkürler!",
+                "Siparişiniz teslim edildi. ShopFlow'u tercih ettiğiniz için teşekkür ederiz.",
+                detailRow("Sipariş No", "#" + orderId)
+        );
+        sendHtml(to, "ShopFlow — Teslim Edildi #" + orderId, html);
+    }
+
+    @Async
     public void sendPaymentSuccess(String to, Long orderId) {
         String html = baseTemplate(
                 "Ödeme Başarılı",

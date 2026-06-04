@@ -1,0 +1,54 @@
+name: E2E
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run unit tests
+        run: ./mvnw test
+
+      - name: Start application
+        run: ./mvnw spring-boot:run -Dspring-boot.run.profiles=test &
+
+      - name: Wait for application
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/actuator/health; then
+              echo "App ready"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "App did not start"
+          exit 1
+
+      - name: Install Playwright
+        working-directory: scripts
+        run: |
+          npm install --silent
+          npx playwright install chromium --with-deps
+
+      - name: E2E smoke tests
+        working-directory: scripts
+        run: npm run e2e

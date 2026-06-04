@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record PaymentRequest(
         @NotBlank String idempotencyKey,
-        Boolean simulateFailure
+        Boolean simulateFailure,
+        String paymentIntentId
 ) {
 }

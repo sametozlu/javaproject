@@ -38,8 +38,12 @@ const state = {
     selectedProductId: null,
     appliedCoupon: null,
     pendingPaymentOrder: null,
+    paymentConfig: { stripeEnabled: false, publishableKey: null },
     chart: null,
 };
+
+let stripeInstance = null;
+let stripeCardElement = null;
 
 const SORT_MAP = {
     newest: 'createdAt,desc',
@@ -203,6 +207,46 @@ function updateCardPreview() {
     if ($('#cardPreviewName')) $('#cardPreviewName').textContent = name;
     if ($('#cardPreviewExpiry')) $('#cardPreviewExpiry').textContent = exp;
 }
+async function loadPaymentConfig() {
+    try {
+        const cfg = await api('/api/payments/config');
+        state.paymentConfig = { stripeEnabled: !!cfg.stripeEnabled, publishableKey: cfg.publishableKey || null };
+        const stripeLabel = $('#payMethodStripeLabel');
+        if (stripeLabel) stripeLabel.classList.toggle('hidden', !cfg.stripeEnabled);
+    } catch {
+        state.paymentConfig = { stripeEnabled: false, publishableKey: null };
+    }
+}
+
+function setPaymentMode(mode) {
+    const isStripe = mode === 'stripe';
+    $('#demoPaymentPanel')?.classList.toggle('hidden', isStripe);
+    $('#stripePaymentPanel')?.classList.toggle('hidden', !isStripe);
+    $('#simulateFailWrap')?.classList.toggle('hidden', isStripe);
+    $$('.payment-method').forEach((l) => l.classList.remove('active'));
+    (isStripe ? $('#payMethodStripeLabel') : $('#payMethodDemoLabel'))?.classList.add('active');
+    if (isStripe) ensureStripeCardElement();
+}
+
+async function ensureStripeCardElement() {
+    if (!state.paymentConfig.stripeEnabled || !window.Stripe) return;
+    if (!stripeInstance) stripeInstance = window.Stripe(state.paymentConfig.publishableKey);
+    if (stripeCardElement) return;
+    const container = $('#stripe-card-element');
+    if (!container) return;
+    const elements = stripeInstance.elements();
+    stripeCardElement = elements.create('card', {
+        style: {
+            base: { fontSize: '16px', color: '#1a1d26', '::placeholder': { color: '#8b939f' } },
+        },
+    });
+    stripeCardElement.mount(container);
+    stripeCardElement.on('change', (ev) => {
+        const err = $('#stripe-card-errors');
+        if (err) err.textContent = ev.error ? ev.error.message : '';
+    });
+}
+
 function openPaymentModal(order) {
     state.pendingPaymentOrder = order;
     const amount = formatMoney(order.totalAmount);
@@ -214,11 +258,61 @@ function openPaymentModal(order) {
         form.reset();
         if ($('#simulatePaymentFail')) $('#simulatePaymentFail').checked = false;
     }
+    const demoRadio = document.querySelector('input[name="payMethod"][value="demo"]');
+    if (demoRadio) demoRadio.checked = true;
+    setPaymentMode('demo');
     fillDemoCard(true);
     closeCart();
     $('#paymentModal').showModal();
 }
+
+async function processStripePayment(orderId) {
+    const btn = $('#confirmPaymentBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Stripe işleniyor...'; }
+    try {
+        const intent = await api(`/api/orders/${orderId}/pay/stripe-intent`, { method: 'POST', body: '{}' });
+        const { error, paymentIntent } = await stripeInstance.confirmCardPayment(intent.clientSecret, {
+            payment_method: { card: stripeCardElement },
+        });
+        if (error) throw new Error(error.message);
+        const pay = await api(`/api/orders/${orderId}/pay`, {
+            method: 'POST',
+            body: JSON.stringify({
+                idempotencyKey: `stripe-${paymentIntent.id}`,
+                paymentIntentId: paymentIntent.id,
+            }),
+        });
+        $('#paymentModal')?.close();
+        state.pendingPaymentOrder = null;
+        if (isPaymentPaid(pay)) {
+            state.cart = [];
+            state.appliedCoupon = null;
+            saveCart();
+            toast('Stripe ödemesi başarılı!');
+        } else {
+            toast(pay?.message || 'Ödeme tamamlanamadı', 'error');
+        }
+        await loadProducts();
+        showView('orders');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span>Ödemeyi Onayla</span>'; }
+    }
+}
+
 async function processPayment(orderId) {
+    const method = document.querySelector('input[name="payMethod"]:checked')?.value || 'demo';
+    if (method === 'stripe') {
+        if (!state.paymentConfig.stripeEnabled) {
+            toast('Stripe yapılandırılmamış', 'error');
+            return;
+        }
+        try {
+            await processStripePayment(orderId);
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+        return;
+    }
     const cardNumber = digitsOnly($('#cardNumber')?.value);
     if (cardNumber.length < 16) { toast('Geçerli bir kart numarası girin (16 hane)', 'error'); return; }
     if (digitsOnly($('#cardExpiry')?.value).length < 4) { toast('Son kullanma tarihi girin (AA/YY)', 'error'); return; }
@@ -1118,6 +1212,7 @@ function bindEvents() {
 
     $('#fillSuccessCard')?.addEventListener('click', () => fillDemoCard(true));
     $('#fillFailCard')?.addEventListener('click', () => fillDemoCard(false));
+    $$('input[name="payMethod"]').forEach((r) => r.addEventListener('change', (e) => setPaymentMode(e.target.value)));
 
     $('#cardNumber')?.addEventListener('input', (e) => { e.target.value = formatCardNumber(e.target.value); updateCardPreview(); });
     $('#cardExpiry')?.addEventListener('input', (e) => { e.target.value = formatCardExpiry(e.target.value); updateCardPreview(); });
@@ -1309,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateAuthUI();
     updateCartUI();
     initHero();
+    await loadPaymentConfig();
     await loadCategories();
     await Promise.all([loadProducts(), loadFeatured(), loadBestsellers()]);
 });

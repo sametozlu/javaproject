@@ -33,6 +33,9 @@ public class Payment {
     @Column(nullable = false, unique = true, length = 100)
     private String idempotencyKey;
 
+    @Column(length = 100)
+    private String stripePaymentIntentId;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 

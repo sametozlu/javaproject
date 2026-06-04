@@ -35,6 +35,15 @@ docker compose up -d postgres redis mailhog
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=prod"
 ```
 
+## Stripe (opsiyonel)
+
+Render **Environment** → ekle:
+
+- `STRIPE_SECRET_KEY` = `sk_test_...`
+- `STRIPE_PUBLISHABLE_KEY` = `pk_test_...`
+
+[Stripe Dashboard](https://dashboard.stripe.com/test/apikeys) test anahtarları. Tanımlı değilse sadece demo ödeme çalışır.
+
 ## Notlar
 
 - Ürün görselleri `picsum.photos` üzerinden gelir (internet gerekir).  
