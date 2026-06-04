@@ -78,6 +78,24 @@ function getProductImage(p) {
     if (p.imageUrl) return p.imageUrl;
     return `https://picsum.photos/seed/shopflow-${encodeURIComponent(`${p.id}-${p.name || 'p'}`)}/600/450`;
 }
+function getProductGallery(p) {
+    const main = getProductImage(p);
+    if (p.imageUrl) return [main, `${p.imageUrl}?v=2`, `${p.imageUrl}?v=3`].filter((v, i, a) => a.indexOf(v) === i);
+    return [
+        main,
+        `https://picsum.photos/seed/shopflow-${p.id}-b/600/450`,
+        `https://picsum.photos/seed/shopflow-${p.id}-c/600/450`,
+    ];
+}
+
+const ADMIN_STAT_LABELS = {
+    totalUsers: 'Kullanıcılar',
+    totalProducts: 'Ürünler',
+    totalOrders: 'Siparişler',
+    pendingOrders: 'Bekleyen',
+    totalRevenue: 'Toplam gelir',
+};
+const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 function renderStars(rating) {
     const r = Math.round(Number(rating) || 0);
     return '★'.repeat(r) + '☆'.repeat(5 - r);
@@ -258,7 +276,8 @@ function updateAuthUI() {
     const adminTab = $('#adminTab');
     if (!area) return;
     if (state.user) {
-        area.innerHTML = `<div class="user-chip"><span class="role-badge">${state.user.role}</span><strong>${escapeHtml(state.user.fullName)}</strong><button class="btn btn-ghost btn-sm" id="logoutBtn">Çıkış</button></div>`;
+        area.innerHTML = `<div class="user-chip"><span class="role-badge">${state.user.role}</span><strong>${escapeHtml(state.user.fullName)}</strong><button class="btn btn-ghost btn-sm" id="profileBtn">Profil</button><button class="btn btn-ghost btn-sm" id="logoutBtn">Çıkış</button></div>`;
+        $('#profileBtn').onclick = openProfile;
         $('#logoutBtn').onclick = logout;
         ordersTab.hidden = false;
         wishlistTab.hidden = false;
@@ -446,22 +465,86 @@ async function showProductPage(productId) {
     }
     let reviews = [];
     try { reviews = await api(`/api/products/${productId}/reviews`); } catch { /* optional */ }
+    const gallery = getProductGallery(p);
+    const thumbs = gallery.map((url, i) =>
+        `<button type="button" class="gallery-thumb ${i === 0 ? 'active' : ''}" data-img="${escapeHtml(url)}"><img src="${escapeHtml(url)}" alt=""></button>`
+    ).join('');
     $('#productPageContent').innerHTML = `
-        <div class="product-page-grid">
-            <img class="product-page-img" src="${getProductImage(p)}" alt="">
-            <div>
+        <div class="product-page-layout">
+            <div class="product-gallery">
+                <img class="product-page-img" id="productMainImg" src="${escapeHtml(gallery[0])}" alt="">
+                <div class="gallery-thumbs">${thumbs}</div>
+            </div>
+            <div class="product-page-info">
+                <span class="product-cat">${escapeHtml(p.categoryName || '')}</span>
                 <h1>${escapeHtml(p.name)}</h1>
+                <div class="product-rating">${renderStars(p.averageRating)} <small>(${p.reviewCount || 0} yorum)</small></div>
                 <p class="product-page-price">${formatMoney(p.price)}</p>
-                <p>${escapeHtml(p.description || '')}</p>
-                <p>Stok: ${p.stock}</p>
-                <button class="btn btn-primary" id="pageAddCart">Sepete Ekle</button>
+                <p class="product-desc">${escapeHtml(p.description || '')}</p>
+                <p class="product-stock ${(p.stockQuantity ?? p.stock) <= 5 ? 'low' : ''}">Stok: ${p.stockQuantity ?? p.stock ?? 0}</p>
+                <div class="product-page-actions">
+                    <button class="btn btn-primary btn-lg" id="pageAddCart">Sepete Ekle</button>
+                    <button class="btn btn-outline" id="pageWishlist">${state.wishlist.includes(p.id) ? '♥ Favoride' : '♡ Favorile'}</button>
+                    ${(p.stockQuantity ?? p.stock) === 0 ? `<button class="btn btn-outline" id="stockAlertBtn">Stok gelince haber ver</button>` : ''}
+                </div>
             </div>
         </div>
-        <section class="reviews-section"><h3>Yorumlar</h3>
-        ${reviews.length ? reviews.map((r) => `<div class="review"><strong>${escapeHtml(r.userName)}</strong> ${renderStars(r.rating)}<p>${escapeHtml(r.comment)}</p></div>`).join('') : '<p>Henüz yorum yok.</p>'}
+        <section class="reviews-section">
+            <h3>Değerlendirmeler</h3>
+            <div class="reviews-list">${reviews.length ? reviews.map((r) =>
+                `<div class="review-card"><strong>${escapeHtml(r.userName)}</strong> ${renderStars(r.rating)}<p>${escapeHtml(r.comment || '')}</p><time>${new Date(r.createdAt).toLocaleDateString('tr-TR')}</time></div>`
+            ).join('') : '<p class="empty-state compact">Henüz yorum yok.</p>'}</div>
+            ${state.token ? `<form id="reviewForm" class="review-form">
+                <h4>Yorum yaz</h4>
+                <label>Puan<select name="rating" required><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></label>
+                <label>Yorum<textarea name="comment" rows="2" placeholder="Ürün hakkında düşüncelerin..."></textarea></label>
+                <button type="submit" class="btn btn-primary btn-sm">Gönder</button>
+            </form>` : '<p class="sidebar-hint">Yorum yazmak için giriş yapın.</p>'}
         </section>`;
+    $('#productPageContent').querySelectorAll('.gallery-thumb').forEach((btn) => {
+        btn.onclick = () => {
+            $('#productMainImg').src = btn.dataset.img;
+            $('#productPageContent').querySelectorAll('.gallery-thumb').forEach((b) => b.classList.toggle('active', b === btn));
+        };
+    });
     $('#pageAddCart').onclick = () => addToCart(p.id);
+    $('#pageWishlist')?.addEventListener('click', () => toggleWishlist(p.id));
+    $('#stockAlertBtn')?.addEventListener('click', async () => {
+        if (!state.token) { $('#authModal').showModal(); return; }
+        try {
+            await api(`/api/products/${p.id}/stock-alerts`, { method: 'POST' });
+            toast('Stok gelince e-posta ile bilgilendirileceksin');
+        } catch (e) { toast(e.message, 'error'); }
+    });
+    $('#reviewForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        try {
+            await api(`/api/products/${p.id}/reviews`, {
+                method: 'POST',
+                body: JSON.stringify({ rating: Number(fd.get('rating')), comment: fd.get('comment') || '' }),
+            });
+            toast('Yorumun eklendi');
+            showProductPage(p.id);
+        } catch (err) { toast(err.message, 'error'); }
+    });
     showView('product');
+    loadSimilarProducts(p);
+}
+
+async function loadSimilarProducts(p) {
+    const section = $('#similarProducts');
+    const grid = $('#similarGrid');
+    if (!section || !grid) return;
+    try {
+        const params = new URLSearchParams({ categoryId: p.categoryId, size: 4, page: 0 });
+        const data = await api(`/api/products?${params}`);
+        const similar = (data.content || []).filter((x) => x.id !== p.id).slice(0, 4);
+        if (!similar.length) { section.hidden = true; return; }
+        section.hidden = false;
+        grid.innerHTML = similar.map(renderProductCard).join('');
+        bindProductCards(grid);
+    } catch { section.hidden = true; }
 }
 
 function addToCart(productId) {
@@ -603,18 +686,54 @@ async function loadMyOrders() {
 function renderOrderCard(o) {
     const items = o.items.map((i) => `<li>${escapeHtml(i.productName)} × ${i.quantity} — ${formatMoney(i.subtotal)}</li>`).join('');
     return `<div class="order-card">
-        <div class="order-card-header"><div><strong>Sipariş #${o.id}</strong></div><span class="order-status ${o.status}">${o.status}</span></div>
+        <div class="order-card-header">
+            <div><strong>Sipariş #${o.id}</strong><div class="order-meta">${new Date(o.createdAt).toLocaleString('tr-TR')}</div></div>
+            <span class="order-status ${o.status}">${o.status}</span>
+        </div>
         ${renderOrderTimeline(o.status)}
         <ul class="order-items">${items}</ul>
-        <div class="order-total">Toplam: ${formatMoney(o.totalAmount)}</div>
-        ${o.trackingNumber ? `<div class="order-tracking">📦 ${escapeHtml(o.trackingNumber)}</div>` : ''}
+        <div class="order-total">Toplam: ${formatMoney(o.totalAmount)}${o.discountAmount > 0 ? ` <small>(indirim -${formatMoney(o.discountAmount)})</small>` : ''}</div>
+        ${o.trackingNumber ? `<div class="order-tracking">📦 Kargo: <strong>${escapeHtml(o.trackingNumber)}</strong></div>` : ''}
         <div class="order-card-actions">
+            <button class="btn btn-outline btn-sm" data-order-detail="${o.id}">Detay</button>
             ${o.status === 'PENDING' ? `<button class="btn btn-primary btn-sm pay-order" data-pay="${o.id}">Öde</button>
             <button class="btn btn-outline btn-sm cancel-order" data-cancel="${o.id}">İptal</button>` : ''}
         </div></div>`;
 }
 
+async function openOrderDetail(orderId) {
+    try {
+        const o = await api(`/api/orders/${orderId}`);
+        const items = o.items.map((i) =>
+            `<li>${escapeHtml(i.productName)} × ${i.quantity} — ${formatMoney(i.subtotal)}</li>`
+        ).join('');
+        const ship = o.shippingAddress ? `
+            <div class="order-shipping-box">
+                <strong>Teslimat</strong>
+                <p>${escapeHtml(o.shippingAddress.fullName)}<br>
+                ${escapeHtml(o.shippingAddress.addressLine)}, ${escapeHtml(o.shippingAddress.district)} / ${escapeHtml(o.shippingAddress.city)}<br>
+                Tel: ${escapeHtml(o.shippingAddress.phone)}</p>
+            </div>` : '';
+        $('#orderDetailContent').innerHTML = `
+            <div class="order-detail-page">
+                <div class="order-card-header">
+                    <div><h1>Sipariş #${o.id}</h1><span class="order-status ${o.status}">${o.status}</span></div>
+                    <time>${new Date(o.createdAt).toLocaleString('tr-TR')}</time>
+                </div>
+                ${renderOrderTimeline(o.status)}
+                ${o.trackingNumber ? `<div class="order-tracking-box"><strong>Kargo takip</strong><code>${escapeHtml(o.trackingNumber)}</code></div>` : '<p class="sidebar-hint">Kargo takip no. sipariş kargoya verilince oluşur.</p>'}
+                <ul class="order-items">${items}</ul>
+                ${ship}
+                <div class="order-total">Toplam: ${formatMoney(o.totalAmount)}</div>
+            </div>`;
+        showView('order');
+    } catch (e) { toast(e.message, 'error'); }
+}
+
 function bindOrderActions(container) {
+    container?.querySelectorAll('[data-order-detail]').forEach((btn) => {
+        btn.onclick = () => openOrderDetail(Number(btn.dataset.orderDetail));
+    });
     container?.querySelectorAll('.pay-order').forEach((btn) => {
         btn.onclick = async () => {
             try {
@@ -633,6 +752,22 @@ function bindOrderActions(container) {
             } catch (e) { toast(e.message, 'error'); }
         };
     });
+}
+
+async function openProfile() {
+    if (!state.token) return;
+    try {
+        const p = await api('/api/users/me');
+        $('#profileContent').innerHTML = `
+            <div class="profile-card">
+                <p><strong>Ad:</strong> ${escapeHtml(p.fullName)}</p>
+                <p><strong>E-posta:</strong> ${escapeHtml(p.email)}</p>
+                <p><strong>Rol:</strong> <span class="role-badge">${p.role}</span></p>
+                <p><strong>Sipariş sayısı:</strong> ${p.orderCount}</p>
+                <p><strong>Üyelik:</strong> ${new Date(p.createdAt).toLocaleDateString('tr-TR')}</p>
+            </div>`;
+        $('#profileModal').showModal();
+    } catch (e) { toast(e.message, 'error'); }
 }
 
 async function loadWishlistIds() {
@@ -667,12 +802,224 @@ async function loadWishlist() {
     } catch (e) { grid.innerHTML = `<p class="empty-state">${escapeHtml(e.message)}</p>`; }
 }
 
+function renderAdminChart(chartData) {
+    const canvas = $('#ordersChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (state.chart) { state.chart.destroy(); state.chart = null; }
+    state.chart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                { label: 'Sipariş', data: chartData.orderCounts, backgroundColor: 'rgba(242, 122, 26, 0.75)', borderRadius: 6 },
+                { label: 'Gelir (₺)', data: chartData.revenues, type: 'line', borderColor: '#2d3a4a', backgroundColor: 'transparent', yAxisID: 'y1' },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true }, y1: { position: 'right', beginAtZero: true } },
+        },
+    });
+}
+
+async function loadAdminStats() {
+    const stats = await api('/api/admin/stats');
+    $('#adminStats').innerHTML = Object.entries(stats).map(([k, v]) => {
+        const label = ADMIN_STAT_LABELS[k] || k;
+        const val = k === 'totalRevenue' ? formatMoney(v) : v;
+        return `<div class="stat-card"><span>${label}</span><strong>${val}</strong></div>`;
+    }).join('');
+}
+
+async function loadAdminChart() {
+    try {
+        const chartData = await api('/api/admin/charts/orders?months=6');
+        renderAdminChart(chartData);
+    } catch { /* optional */ }
+}
+
+async function loadStockAlerts() {
+    const panel = $('#stockAlertsPanel');
+    const el = $('#stockAlerts');
+    if (!el) return;
+    try {
+        const products = await api('/api/admin/stock-alerts');
+        if (!products.length) {
+            panel.hidden = true;
+            return;
+        }
+        panel.hidden = false;
+        el.innerHTML = `<table class="admin-table"><thead><tr><th>Ürün</th><th>Stok</th></tr></thead><tbody>
+            ${products.map((p) => `<tr><td>${escapeHtml(p.name)}</td><td class="text-danger"><strong>${p.stockQuantity}</strong></td></tr>`).join('')}
+        </tbody></table>`;
+    } catch { panel.hidden = true; }
+}
+
+async function loadAdminAuditLogs() {
+    const el = $('#auditLogs');
+    if (!el) return;
+    try {
+        const logs = await api('/api/admin/audit-logs');
+        el.innerHTML = logs.length ? logs.map((l) =>
+            `<div class="audit-item"><span class="audit-action">${escapeHtml(l.action)}</span>
+            <span>${escapeHtml(l.userEmail)} · ${escapeHtml(l.entityType)} #${l.entityId || '—'}</span>
+            <time>${new Date(l.createdAt).toLocaleString('tr-TR')}</time></div>`
+        ).join('') : '<p class="empty-state compact">Kayıt yok</p>';
+    } catch (e) { el.innerHTML = `<p class="empty-state compact">${escapeHtml(e.message)}</p>`; }
+}
+
+async function loadAdminCategories() {
+    const el = $('#adminCategories');
+    if (!el) return;
+    try {
+        const cats = await api('/api/categories');
+        el.innerHTML = `<table class="admin-table"><thead><tr><th>Ad</th><th>Slug</th><th></th></tr></thead><tbody>
+            ${cats.map((c) => `<tr>
+                <td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.slug)}</td>
+                <td class="admin-actions">
+                    <button class="btn btn-ghost btn-sm" data-edit-cat="${c.id}">Düzenle</button>
+                    <button class="btn btn-ghost btn-sm text-danger" data-del-cat="${c.id}">Sil</button>
+                </td></tr>`).join('')}
+        </tbody></table>`;
+        el.querySelectorAll('[data-edit-cat]').forEach((btn) => {
+            btn.onclick = async () => {
+                const cats = await api('/api/categories');
+                const c = cats.find((x) => x.id === Number(btn.dataset.editCat));
+                if (c) openCategoryModal(c);
+            };
+        });
+        el.querySelectorAll('[data-del-cat]').forEach((btn) => {
+            btn.onclick = async () => {
+                if (!confirm('Kategori silinsin mi?')) return;
+                try {
+                    await api(`/api/categories/${btn.dataset.delCat}`, { method: 'DELETE' });
+                    toast('Kategori silindi');
+                    loadAdminCategories();
+                    loadCategories();
+                } catch (e) { toast(e.message, 'error'); }
+            };
+        });
+    } catch (e) { el.innerHTML = `<p class="empty-state compact">${escapeHtml(e.message)}</p>`; }
+}
+
+async function loadAdminProducts() {
+    const el = $('#adminProducts');
+    if (!el) return;
+    try {
+        const data = await api('/api/products?size=50&page=0');
+        const products = data.content || [];
+        el.innerHTML = `<table class="admin-table"><thead><tr><th>Ürün</th><th>Fiyat</th><th>Stok</th><th></th></tr></thead><tbody>
+            ${products.map((p) => `<tr>
+                <td>${escapeHtml(p.name)}</td>
+                <td>${formatMoney(p.price)}</td>
+                <td>${p.stockQuantity}</td>
+                <td class="admin-actions">
+                    <button class="btn btn-ghost btn-sm" data-edit-prod="${p.id}">Düzenle</button>
+                    <button class="btn btn-ghost btn-sm text-danger" data-del-prod="${p.id}">Sil</button>
+                </td></tr>`).join('')}
+        </tbody></table>`;
+        el.querySelectorAll('[data-edit-prod]').forEach((btn) => {
+            btn.onclick = async () => {
+                const p = await api(`/api/products/${btn.dataset.editProd}`);
+                openProductModal(p);
+            };
+        });
+        el.querySelectorAll('[data-del-prod]').forEach((btn) => {
+            btn.onclick = async () => {
+                if (!confirm('Ürün silinsin mi?')) return;
+                try {
+                    await api(`/api/products/${btn.dataset.delProd}`, { method: 'DELETE' });
+                    toast('Ürün silindi');
+                    loadAdminProducts();
+                    loadProducts();
+                } catch (e) { toast(e.message, 'error'); }
+            };
+        });
+    } catch (e) { el.innerHTML = `<p class="empty-state compact">${escapeHtml(e.message)}</p>`; }
+}
+
+async function loadAdminOrders() {
+    const el = $('#adminOrders');
+    if (!el) return;
+    try {
+        const orders = await api('/api/admin/orders');
+        el.innerHTML = `<table class="admin-table"><thead><tr><th>#</th><th>Müşteri</th><th>Durum</th><th>Toplam</th><th></th></tr></thead><tbody>
+            ${orders.map((o) => `<tr>
+                <td>${o.id}</td>
+                <td>${escapeHtml(o.userEmail || '—')}</td>
+                <td><select class="admin-status-select" data-order-id="${o.id}">
+                    ${ORDER_STATUSES.map((s) => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                </select></td>
+                <td>${formatMoney(o.totalAmount)}</td>
+                <td><button class="btn btn-ghost btn-sm" data-save-status="${o.id}">Kaydet</button></td>
+            </tr>`).join('')}
+        </tbody></table>`;
+        el.querySelectorAll('[data-save-status]').forEach((btn) => {
+            btn.onclick = async () => {
+                const id = btn.dataset.saveStatus;
+                const sel = el.querySelector(`select[data-order-id="${id}"]`);
+                try {
+                    await api(`/api/admin/orders/${id}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: sel.value }),
+                    });
+                    toast('Durum güncellendi');
+                    loadAdminOrders();
+                } catch (e) { toast(e.message, 'error'); }
+            };
+        });
+    } catch (e) { el.innerHTML = `<p class="empty-state compact">${escapeHtml(e.message)}</p>`; }
+}
+
+function fillCategorySelect() {
+    const sel = $('#productCategorySelect');
+    if (!sel) return;
+    sel.innerHTML = state.categories.map((c) =>
+        `<option value="${c.id}">${escapeHtml(c.name)}</option>`
+    ).join('');
+}
+
+function openCategoryModal(cat = null) {
+    const form = $('#categoryForm');
+    if (!form) return;
+    form.reset();
+    form.elements.id.value = cat?.id || '';
+    form.elements.name.value = cat?.name || '';
+    form.elements.slug.value = cat?.slug || '';
+    $('#categoryModalTitle').textContent = cat ? 'Kategori Düzenle' : 'Yeni Kategori';
+    $('#categoryModal').showModal();
+}
+
+function openProductModal(product = null) {
+    fillCategorySelect();
+    const form = $('#productForm');
+    if (!form) return;
+    form.reset();
+    form.elements.id.value = product?.id || '';
+    form.elements.name.value = product?.name || '';
+    form.elements.description.value = product?.description || '';
+    form.elements.price.value = product?.price || '';
+    form.elements.stockQuantity.value = product?.stockQuantity ?? 10;
+    if (product?.categoryId) form.elements.categoryId.value = product.categoryId;
+    $('#productModalTitle').textContent = product ? 'Ürün Düzenle' : 'Yeni Ürün';
+    $('#productImageField').classList.toggle('hidden', !product?.id);
+    $('#productModal').showModal();
+}
+
 async function loadAdmin() {
     if (state.user?.role !== 'ADMIN') return;
     try {
-        const stats = await api('/api/admin/stats');
-        $('#adminStats').innerHTML = Object.entries(stats).map(([k, v]) => `<div class="stat-card"><span>${k}</span><strong>${v}</strong></div>`).join('');
-    } catch { /* optional */ }
+        await Promise.all([
+            loadAdminStats(),
+            loadAdminChart(),
+            loadStockAlerts(),
+            loadAdminAuditLogs(),
+            loadAdminCategories(),
+            loadAdminProducts(),
+            loadAdminOrders(),
+        ]);
+    } catch (e) { toast(e.message, 'error'); }
 }
 
 function renderMobileNav() {
@@ -831,6 +1178,82 @@ function bindEvents() {
     $('#manageAddressBtn')?.addEventListener('click', () => $('#addressModal').showModal());
     $('#closeAddress')?.addEventListener('click', () => $('#addressModal').close());
     $('#backFromProduct')?.addEventListener('click', () => showView('shop'));
+    $('#backFromOrder')?.addEventListener('click', () => showView('orders'));
+    $('#closeProfile')?.addEventListener('click', () => $('#profileModal')?.close());
+    $('#closeProduct')?.addEventListener('click', () => $('#productModal')?.close());
+    $('#closeCategory')?.addEventListener('click', () => $('#categoryModal')?.close());
+
+    $('#newCategoryBtn')?.addEventListener('click', () => openCategoryModal());
+    $('#newProductBtn')?.addEventListener('click', () => openProductModal());
+
+    $('#categoryForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const id = fd.get('id');
+        const body = { name: fd.get('name'), slug: fd.get('slug') };
+        try {
+            if (id) await api(`/api/categories/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+            else await api('/api/categories', { method: 'POST', body: JSON.stringify(body) });
+            $('#categoryModal').close();
+            toast('Kategori kaydedildi');
+            await loadCategories();
+            loadAdminCategories();
+        } catch (err) { toast(err.message, 'error'); }
+    });
+
+    $('#productForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const id = fd.get('id');
+        const body = {
+            name: fd.get('name'),
+            description: fd.get('description') || '',
+            price: Number(fd.get('price')),
+            stockQuantity: Number(fd.get('stockQuantity')),
+            categoryId: Number(fd.get('categoryId')),
+            lowStockThreshold: 5,
+        };
+        try {
+            let product;
+            if (id) product = await api(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+            else product = await api('/api/products', { method: 'POST', body: JSON.stringify(body) });
+            const file = $('#productImageInput')?.files?.[0];
+            if (file && product?.id) {
+                const imgFd = new FormData();
+                imgFd.append('file', file);
+                const headers = { Authorization: `Bearer ${state.token}` };
+                const res = await fetch(`${API}/api/products/${product.id}/image`, { method: 'POST', headers, body: imgFd });
+                if (!res.ok) throw new Error('Görsel yüklenemedi');
+            }
+            $('#productModal').close();
+            toast('Ürün kaydedildi');
+            loadAdminProducts();
+            loadProducts();
+        } catch (err) { toast(err.message, 'error'); }
+    });
+
+    $('#forgotPasswordLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        $('#authModal').close();
+        $('#forgotPasswordModal').showModal();
+    });
+    $('#closeForgotPassword')?.addEventListener('click', () => $('#forgotPasswordModal')?.close());
+    $('#forgotPasswordForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = new FormData(e.target).get('email');
+        try {
+            await api('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+            toast('Sıfırlama bağlantısı gönderildi (demo: mail log)');
+            $('#forgotPasswordModal').close();
+        } catch (err) { toast(err.message, 'error'); }
+    });
+
+    $('#applyPriceFilterMobile')?.addEventListener('click', () => {
+        state.minPrice = $('#minPriceMobile')?.value ? Number($('#minPriceMobile').value) : null;
+        state.maxPrice = $('#maxPriceMobile')?.value ? Number($('#maxPriceMobile').value) : null;
+        state.page = 0;
+        loadProducts();
+    });
 
     document.querySelectorAll('.footer-links a[data-view]').forEach((a) => {
         a.addEventListener('click', (e) => {

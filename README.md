@@ -3,10 +3,11 @@
 
 
 [![Java](https://img.shields.io/badge/Java-17-orange)]()
-
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green)]()
-
 [![License](https://img.shields.io/badge/License-MIT-blue)]()
+[![CI](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml/badge.svg)](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml)
+
+**Repo:** https://github.com/sametozlu/javaproject
 
 
 
@@ -54,11 +55,11 @@ Production-style e-commerce platform built with **Spring Boot 3** — REST API, 
 
 | **Admin** | Dashboard, charts, audit logs, image upload, stock alerts |
 
-| **Data** | Flyway V1–V3, seed data, Redis cache (prod) |
+| **Data** | Flyway V1–V5, seed data (94 ürün), Redis cache (prod) |
 
-| **Ops** | Docker Compose, Render deploy, Postman collection, CI |
+| **Ops** | Docker Compose, Render blueprint, Postman, GitHub Actions CI |
 
-| **UI** | E-commerce storefront, mobile nav, price filter, product gallery, order timeline |
+| **UI** | Mağaza, galeri, benzer ürünler, yorum, sepet, demo ödeme, sipariş detay, profil, tam admin panel |
 | **Auth** | JWT + refresh token, password reset email |
 | **Alerts** | Stock-back-in-stock subscription |
 
