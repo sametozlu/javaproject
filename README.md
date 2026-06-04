@@ -179,6 +179,9 @@ Ayrıntılı adımlar: **[docs/DEPLOY.md](docs/DEPLOY.md)**
 | GET | `/api/products/bestsellers` | Public | Top reviewed products |
 | POST | `/api/coupons/validate` | Public | Validate coupon for cart total |
 | POST | `/api/cart/checkout` | User | Checkout (requires `addressId`) |
+| GET | `/api/payments/config` | Public | Stripe enabled + publishable key |
+| POST | `/api/orders/{id}/pay/stripe-intent` | User | Stripe PaymentIntent |
+| POST | `/api/orders/{id}/pay` | User | Demo pay or confirm Stripe |
 | GET | `/api/orders/{id}` | User | Order detail + tracking number |
 
 | POST | `/api/products/{id}/reviews` | User | Add review |
