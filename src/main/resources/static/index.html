@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ShopFlow — Online Alışveriş</title>
+    <meta name="description" content="ShopFlow — Premium teknoloji e-ticaret platformu. Güvenli ödeme, hızlı kargo, binlerce ürün.">
+    <meta property="og:title" content="ShopFlow — Online Alışveriş">
+    <meta property="og:description" content="Teknoloji ürünlerinde en iyi fiyatlar. Spring Boot ile geliştirilmiş profesyonel e-ticaret.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/og-cover.svg">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css?v=12">
+</head>
+<body>
+<div class="top-bar">
+    <div class="container top-bar-inner">
+        <span>🎉 İlk alışverişe özel <strong>WELCOME10</strong> ile %10 indirim!</span>
+        <span class="top-bar-right">Ücretsiz kargo · 500₺ ve üzeri</span>
+    </div>
+</div>
+
+<header class="site-header">
+    <div class="container header-row">
+        <a href="/" class="logo">
+            <span class="logo-icon">S</span>
+            <span class="logo-text">Shop<span>Flow</span></span>
+        </a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menü">☰</button>
+
+        <div class="header-search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="search" id="searchInput" placeholder="Ürün, kategori veya marka ara..." autocomplete="off">
+            <button class="btn btn-search" type="button" id="searchBtn">Ara</button>
+        </div>
+
+        <div class="header-actions">
+            <button class="header-action" id="themeToggle" title="Tema">🌙</button>
+            <button class="header-action" id="wishlistHeaderBtn" title="Favoriler" hidden>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>Favoriler</span>
+            </button>
+            <button class="header-action cart-btn" id="cartBtn">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span>Sepetim</span>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </button>
+            <div id="authArea">
+                <button class="btn btn-login" id="loginBtn">Giriş Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="main-nav container">
+        <button class="nav-link active" data-view="shop">Ana Sayfa</button>
+        <button class="nav-link" data-view="shop" data-scroll="categories">Kategoriler</button>
+        <button class="nav-link" data-view="wishlist" id="wishlistTab" hidden>Favorilerim</button>
+        <button class="nav-link" data-view="orders" id="ordersTab" hidden>Siparişlerim</button>
+        <button class="nav-link" data-view="admin" id="adminTab" hidden>Yönetim Paneli</button>
+    </nav>
+</header>
+
+<main>
+    <section id="viewShop" class="view active">
+        <div class="hero-slider" id="heroSlider">
+            <div class="hero-slide active" style="--slide-bg: url('https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1400&q=80')">
+                <div class="container hero-slide-inner">
+                    <div class="hero-slide-content">
+                        <span class="slide-tag">Yeni Sezon</span>
+                        <h1>Teknoloji ürünlerinde<br><em>%20'ye varan indirim</em></h1>
+                        <p>Klavye, kulaklık, monitör ve daha fazlası — hızlı teslimat garantisi.</p>
+                        <button class="btn btn-primary btn-lg hero-cta" data-scroll="products">Hemen Keşfet</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="--slide-bg: url('https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=1400&q=80')">
+                <div class="container hero-slide-inner">
+                    <div class="hero-slide-content">
+                        <span class="slide-tag">Gaming</span>
+                        <h1>Profesyonel setup<br><em>tek adreste</em></h1>
+                        <p>Mechanical klavye, gaming mouse ve 144Hz monitörler.</p>
+                        <button class="btn btn-primary btn-lg hero-cta" data-scroll="products">Alışverişe Başla</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="--slide-bg: url('https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=1400&q=80')">
+                <div class="container hero-slide-inner">
+                    <div class="hero-slide-content">
+                        <span class="slide-tag">Mobil</span>
+                        <h1>Kablosuz özgürlük<br><em>her yerde seninle</em></h1>
+                        <p>Bluetooth kulaklık ve mobil aksesuarlarda özel fiyatlar.</p>
+                        <button class="btn btn-primary btn-lg hero-cta" data-scroll="products">Fırsatları Gör</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-dots" id="heroDots"></div>
+            <button class="hero-arrow hero-prev" id="heroPrev" aria-label="Önceki">‹</button>
+            <button class="hero-arrow hero-next" id="heroNext" aria-label="Sonraki">›</button>
+        </div>
+
+        <div class="container">
+            <div class="trust-bar">
+                <div class="trust-item"><span>🚚</span><div><strong>Hızlı Kargo</strong><small>1-3 iş günü</small></div></div>
+                <div class="trust-item"><span>🔒</span><div><strong>Güvenli Ödeme</strong><small>256-bit SSL</small></div></div>
+                <div class="trust-item"><span>↩️</span><div><strong>Kolay İade</strong><small>14 gün içinde</small></div></div>
+                <div class="trust-item"><span>💳</span><div><strong>Taksit İmkanı</strong><small>12 aya varan</small></div></div>
+            </div>
+
+            <section class="categories-section" id="categories">
+                <div class="section-head">
+                    <h2>Kategoriler</h2>
+                    <p>İhtiyacına göre keşfet</p>
+                </div>
+                <div class="category-grid" id="categoryGrid"></div>
+            </section>
+
+            <section class="home-products-section">
+                <div class="section-head">
+                    <h2>Öne Çıkan Ürünler</h2>
+                    <p>Editörün seçimi</p>
+                </div>
+                <div class="products-grid home-grid" id="featuredGrid">
+                    <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                </div>
+            </section>
+
+            <section class="home-products-section">
+                <div class="section-head">
+                    <h2>Çok Satanlar</h2>
+                    <p>En çok değerlendirilen ürünler</p>
+                </div>
+                <div class="products-grid home-grid" id="bestsellersGrid">
+                    <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                </div>
+            </section>
+
+            <div class="promo-row">
+                <a class="promo-card promo-orange" href="#">
+                    <div><strong>Süper Fırsat</strong><span>Kupon: SUMMER20</span></div>
+                    <span class="promo-arrow">→</span>
+                </a>
+                <a class="promo-card promo-blue" href="#">
+                    <div><strong>Ücretsiz Kargo</strong><span>500₺ üzeri siparişlerde</span></div>
+                    <span class="promo-arrow">→</span>
+                </a>
+                <a class="promo-card promo-green" href="#">
+                    <div><strong>Yeni Üyelere</strong><span>%10 hoş geldin indirimi</span></div>
+                    <span class="promo-arrow">→</span>
+                </a>
+            </div>
+
+            <section class="shop-section" id="products">
+                <nav class="breadcrumb" id="breadcrumb">
+                    <span>Ana Sayfa</span>
+                    <span class="sep">›</span>
+                    <span id="breadcrumbCurrent">Tüm Ürünler</span>
+                </nav>
+
+                <div class="shop-layout">
+                    <aside class="shop-sidebar">
+                        <div class="sidebar-box">
+                            <h3>Kategoriler</h3>
+                            <ul class="sidebar-cats" id="sidebarCats"></ul>
+                        </div>
+                        <div class="sidebar-box">
+                            <h3>Fiyat Aralığı</h3>
+                            <div class="price-filter">
+                                <label>Min (₺)<input type="number" id="minPrice" min="0" step="10" placeholder="0"></label>
+                                <label>Max (₺)<input type="number" id="maxPrice" min="0" step="10" placeholder="10000"></label>
+                                <button type="button" class="btn btn-primary btn-sm btn-block" id="applyPriceFilter">Uygula</button>
+                                <button type="button" class="btn btn-ghost btn-sm btn-block" id="clearPriceFilter">Temizle</button>
+                            </div>
+                        </div>
+                        <div class="sidebar-box sidebar-promo">
+                            <strong>🎁 Hediye Kuponu</strong>
+                            <p>İlk siparişinde <code>WELCOME10</code> kodunu kullan!</p>
+                        </div>
+                    </aside>
+
+                    <div class="shop-main">
+                        <div class="shop-toolbar">
+                            <div class="toolbar-left">
+                                <h2 id="shopTitle">Tüm Ürünler</h2>
+                                <span class="product-count" id="productCount"></span>
+                            </div>
+                            <div class="toolbar-right">
+                                <label class="sort-label">
+                                    Sırala
+                                    <select id="sortSelect">
+                                        <option value="newest">En Yeni</option>
+                                        <option value="price-asc">Fiyat: Düşük → Yüksek</option>
+                                        <option value="price-desc">Fiyat: Yüksek → Düşük</option>
+                                        <option value="name">İsme Göre</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mobile-price-filter" id="mobilePriceFilter">
+                            <input type="number" id="minPriceMobile" min="0" placeholder="Min ₺">
+                            <input type="number" id="maxPriceMobile" min="0" placeholder="Max ₺">
+                            <button type="button" class="btn btn-outline btn-sm" id="applyPriceFilterMobile">Filtrele</button>
+                        </div>
+                        <div class="category-chips" id="categoryChips"></div>
+
+                        <div class="products-grid" id="productsGrid">
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-card"></div>
+                        </div>
+                        <div class="pagination" id="pagination" hidden></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="newsletter">
+                <div class="newsletter-inner">
+                    <div>
+                        <h3>Fırsatlardan haberdar ol</h3>
+                        <p>Yeni ürünler ve indirimler e-postana gelsin.</p>
+                    </div>
+                    <form class="newsletter-form" onsubmit="event.preventDefault(); document.getElementById('toast').textContent='Teşekkürler! Demo modunda kayıt yapılmadı.'; document.getElementById('toast').className='toast show success';">
+                        <input type="email" placeholder="E-posta adresin" required>
+                        <button type="submit" class="btn btn-primary">Abone Ol</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <section id="viewProduct" class="view">
+        <div class="container">
+            <button class="btn btn-ghost back-btn" id="backFromProduct">← Alışverişe Dön</button>
+            <div id="productPageContent" class="product-page"></div>
+            <div class="similar-section" id="similarProducts" hidden>
+                <h2>Benzer Ürünler</h2>
+                <div class="products-grid" id="similarGrid"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="viewWishlist" class="view">
+        <div class="container page-header">
+            <h1>Favorilerim</h1>
+            <p>Beğendiğin ürünler burada</p>
+        </div>
+        <div class="container">
+            <div id="wishlistGrid" class="products-grid"></div>
+        </div>
+    </section>
+
+    <section id="viewOrders" class="view">
+        <div class="container page-header">
+            <h1>Siparişlerim</h1>
+            <p>Geçmiş alışverişlerini takip et</p>
+        </div>
+        <div class="container">
+            <div id="ordersList" class="orders-list"></div>
+        </div>
+    </section>
+
+    <section id="viewOrder" class="view">
+        <div class="container">
+            <button class="btn btn-ghost back-btn" id="backFromOrder">← Siparişlere Dön</button>
+            <div id="orderDetailContent" class="order-detail-page"></div>
+        </div>
+    </section>
+
+    <section id="viewAdmin" class="view">
+        <div class="container page-header">
+            <h1>Yönetim Paneli</h1>
+        </div>
+        <div class="container">
+            <div class="stats-grid" id="adminStats"></div>
+            <div class="admin-panel chart-panel">
+                <h2>Aylık Sipariş Grafiği</h2>
+                <canvas id="ordersChart" height="120"></canvas>
+            </div>
+            <div class="admin-panel" id="stockAlertsPanel" hidden>
+                <h2>Düşük Stok Uyarıları</h2>
+                <div id="stockAlerts"></div>
+            </div>
+            <div class="admin-panel" id="auditPanel">
+                <h2>Sistem Günlükleri (Audit)</h2>
+                <div id="auditLogs" class="audit-log-list"></div>
+            </div>
+            <div class="admin-grid">
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <h2>Kategoriler</h2>
+                        <button class="btn btn-primary btn-sm" id="newCategoryBtn">+ Kategori</button>
+                    </div>
+                    <div id="adminCategories"></div>
+                </div>
+                <div class="admin-panel">
+                    <div class="panel-header">
+                        <h2>Ürünler</h2>
+                        <button class="btn btn-primary btn-sm" id="newProductBtn">+ Yeni Ürün</button>
+                    </div>
+                    <div id="adminProducts" class="admin-table-wrap"></div>
+                </div>
+                <div class="admin-panel">
+                    <h2>Tüm Siparişler</h2>
+                    <div id="adminOrders" class="admin-table-wrap"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-accent" aria-hidden="true"></div>
+    <div class="container footer-main">
+        <div class="footer-grid">
+            <div class="footer-col footer-brand-col">
+                <a href="/" class="logo footer-logo">
+                    <span class="logo-icon">S</span>
+                    <span class="logo-text">Shop<span>Flow</span></span>
+                </a>
+                <p class="footer-tagline">Türkiye'nin güvenilir teknoloji alışveriş platformu. Spring Boot ile geliştirilmiş profesyonel portfolio projesi.</p>
+                <div class="footer-trust">
+                    <span class="footer-trust-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                        Güvenli alışveriş
+                    </span>
+                    <span class="footer-trust-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+                        Hızlı kargo
+                    </span>
+                </div>
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Instagram">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                    </a>
+                    <a href="#" class="social-link" aria-label="X (Twitter)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="#" class="social-link" aria-label="YouTube">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </a>
+                    <a href="#" class="social-link" aria-label="LinkedIn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.062 2.062 0 114.126 0 2.062 2.062 0 01-2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Kurumsal</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Hakkımızda</a></li>
+                    <li><a href="#">Kariyer</a></li>
+                    <li><a href="#">İletişim</a></li>
+                    <li><a href="#">Mağazalarımız</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Yardım</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Sık Sorulan Sorular</a></li>
+                    <li><a href="#">İade & Değişim</a></li>
+                    <li><a href="#" data-view="orders">Kargo Takibi</a></li>
+                    <li><a href="#">Gizlilik Politikası</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Geliştirici</h4>
+                <ul class="footer-links">
+                    <li><a href="/swagger-ui.html" target="_blank" rel="noopener">API Dokümantasyonu</a></li>
+                    <li><a href="/actuator/health" target="_blank" rel="noopener">Sistem Durumu</a></li>
+                    <li><a href="/api-docs" target="_blank" rel="noopener">OpenAPI JSON</a></li>
+                </ul>
+                <div class="footer-dev-badge">
+                    <span>Java 17</span>
+                    <span>Spring Boot 3</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-newsletter">
+            <div class="footer-newsletter-text">
+                <strong>Fırsatları kaçırma</strong>
+                <span>Yeni ürün ve kampanyalardan haberdar ol.</span>
+            </div>
+            <form class="footer-newsletter-form" onsubmit="event.preventDefault();">
+                <input type="email" placeholder="E-posta adresin" aria-label="E-posta">
+                <button type="submit" class="btn btn-primary btn-sm">Abone Ol</button>
+            </form>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+            <span class="footer-copy">© 2026 <strong>ShopFlow</strong>. Tüm hakları saklıdır.</span>
+            <div class="footer-payments">
+                <span class="pay-badge visa">VISA</span>
+                <span class="pay-badge mc">Mastercard</span>
+                <span class="pay-badge troy">Troy</span>
+                <span class="pay-badge amex">AMEX</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+        <div class="cart-header-title">
+            <span class="cart-header-icon" aria-hidden="true">🛒</span>
+            <div>
+                <h3>Sepetim</h3>
+                <p class="cart-sub"><span id="cartItemCount">0</span> ürün</p>
+            </div>
+        </div>
+        <button class="btn-icon" id="closeCart" aria-label="Sepeti kapat">&times;</button>
+    </div>
+    <div class="cart-progress" id="cartProgress">
+        <div class="cart-progress-bar" id="cartProgressBar"></div>
+        <small id="cartProgressText">500₺ üzeri ücretsiz kargo!</small>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+        <div class="checkout-steps" aria-hidden="true">
+            <span class="checkout-step done">Sepet</span>
+            <span class="checkout-step-line"></span>
+            <span class="checkout-step">Ödeme</span>
+            <span class="checkout-step-line"></span>
+            <span class="checkout-step">Onay</span>
+        </div>
+        <label class="coupon-field">
+            <span class="field-label">Teslimat Adresi</span>
+            <select id="checkoutAddress" class="address-select">
+                <option value="">Adres seçin...</option>
+            </select>
+            <button type="button" class="btn btn-ghost btn-sm" id="manageAddressBtn">+ Yeni adres ekle</button>
+        </label>
+        <label class="coupon-field">
+            <span class="field-label">Kupon Kodu</span>
+            <div class="coupon-row">
+                <input type="text" id="couponInput" placeholder="WELCOME10">
+                <button type="button" class="btn btn-outline btn-sm" id="applyCouponBtn">Uygula</button>
+            </div>
+            <span class="coupon-hint" id="couponHint"></span>
+        </label>
+        <div class="cart-summary">
+            <div class="cart-row"><span>Ara Toplam</span><span id="cartSubtotal">₺0,00</span></div>
+            <div class="cart-row" id="cartDiscountRow" hidden><span>İndirim</span><span id="cartDiscount">-₺0,00</span></div>
+            <div class="cart-row"><span>Kargo</span><span id="cartShipping" class="cart-shipping-free">Ücretsiz</span></div>
+            <div class="cart-total"><span>Toplam</span><strong id="cartTotal">₺0,00</strong></div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg checkout-cta" id="checkoutBtn">
+            <span>Ödemeye Geç</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="cart-trust">
+            <span>🔒 SSL</span>
+            <span>💳 Demo ödeme</span>
+            <span>↩️ Kolay iade</span>
+        </div>
+    </div>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<dialog class="modal modal-lg" id="productDetailModal">
+    <button class="btn-icon modal-close" id="closeProductDetail">&times;</button>
+    <div id="productDetailContent" class="product-detail"></div>
+</dialog>
+
+<dialog class="modal payment-modal" id="paymentModal">
+    <button class="btn-icon modal-close payment-close" id="closePayment" aria-label="Kapat">&times;</button>
+    <div class="payment-modal-top">
+        <div class="payment-modal-top-inner">
+            <span class="payment-secure-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14h2v2h-2v-2zm0-8h2v6h-2V7z"/></svg>
+                Güvenli ödeme · Demo
+            </span>
+            <h3>Ödeme</h3>
+            <p class="payment-order-ref">
+                Sipariş <strong id="paymentOrderId">#—</strong>
+                <span class="payment-amount-pill" id="paymentOrderAmount">₺0</span>
+            </p>
+        </div>
+    </div>
+    <form id="paymentForm" class="payment-form">
+        <div class="payment-steps" aria-hidden="true">
+            <span class="payment-step done">Sepet</span>
+            <span class="payment-step-line done"></span>
+            <span class="payment-step active">Ödeme</span>
+            <span class="payment-step-line"></span>
+            <span class="payment-step">Onay</span>
+        </div>
+        <div class="payment-methods">
+            <label class="payment-method active">
+                <input type="radio" name="payMethod" value="card" checked>
+                <span class="payment-method-icon">💳</span>
+                <span>Kredi / Banka Kartı</span>
+            </label>
+        </div>
+        <div class="card-preview" id="cardPreview">
+            <div class="card-preview-bg"></div>
+            <div class="card-preview-top">
+                <div class="card-preview-chip"></div>
+                <span class="card-preview-brand" id="cardPreviewBrand">VISA</span>
+            </div>
+            <div class="card-preview-number" id="cardPreviewNumber">•••• •••• •••• ••••</div>
+            <div class="card-preview-footer">
+                <div class="card-preview-holder">
+                    <small>Kart sahibi</small>
+                    <span id="cardPreviewName">AD SOYAD</span>
+                </div>
+                <div class="card-preview-exp">
+                    <small>Son kullanma</small>
+                    <span id="cardPreviewExpiry">MM/YY</span>
+                </div>
+            </div>
+        </div>
+        <div class="payment-demo-cards">
+            <span class="payment-demo-label">Hızlı doldur</span>
+            <button type="button" class="demo-card-btn success" id="fillSuccessCard" title="Başarılı ödeme">✓ Başarılı</button>
+            <button type="button" class="demo-card-btn fail" id="fillFailCard" title="Reddedilen ödeme">✗ Red</button>
+        </div>
+        <div class="payment-fields">
+            <label class="payment-field">
+                <span class="payment-field-label">Kart üzerindeki isim</span>
+                <div class="payment-input-wrap">
+                    <span class="payment-input-icon">👤</span>
+                    <input type="text" id="cardName" name="cardName" placeholder="AD SOYAD" autocomplete="cc-name" required>
+                </div>
+            </label>
+            <label class="payment-field">
+                <span class="payment-field-label">Kart numarası</span>
+                <div class="payment-input-wrap">
+                    <span class="payment-input-icon">💳</span>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="4242 4242 4242 4242" inputmode="numeric" maxlength="19" autocomplete="cc-number" required>
+                </div>
+            </label>
+            <div class="payment-form-row">
+                <label class="payment-field">
+                    <span class="payment-field-label">Son kullanma</span>
+                    <div class="payment-input-wrap">
+                        <span class="payment-input-icon">📅</span>
+                        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="AA/YY" maxlength="5" autocomplete="cc-exp" required>
+                    </div>
+                </label>
+                <label class="payment-field">
+                    <span class="payment-field-label">CVV</span>
+                    <div class="payment-input-wrap">
+                        <span class="payment-input-icon">🔐</span>
+                        <input type="text" id="cardCvc" name="cardCvc" placeholder="•••" maxlength="4" inputmode="numeric" autocomplete="cc-csc" required>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <label class="payment-sim-toggle">
+            <input type="checkbox" id="simulatePaymentFail">
+            <span class="payment-sim-switch"></span>
+            <span>Zorla başarısız ödeme (test)</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block btn-lg payment-submit" id="confirmPaymentBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            <span>Ödemeyi Onayla</span>
+            <span class="payment-submit-amount" id="paymentSubmitAmount"></span>
+        </button>
+        <p class="payment-footer-note">Bu bir demo ortamıdır. Gerçek ödeme alınmaz.</p>
+    </form>
+</dialog>
+
+<dialog class="modal" id="authModal">
+    <button class="btn-icon modal-close" id="closeAuth">&times;</button>
+    <div class="auth-header">
+        <span class="logo-icon lg">S</span>
+        <h3>ShopFlow'a Hoş Geldin</h3>
+        <p>Hesabına giriş yap veya yeni hesap oluştur</p>
+    </div>
+    <div class="auth-tabs">
+        <button class="auth-tab active" data-auth="login">Giriş Yap</button>
+        <button class="auth-tab" data-auth="register">Kayıt Ol</button>
+    </div>
+    <p class="auth-forgot"><a href="#" id="forgotPasswordLink">Şifremi unuttum</a></p>
+    <form id="loginForm" class="auth-form">
+        <label>E-posta<input type="email" name="email" required placeholder="ornek@mail.com"></label>
+        <label>Şifre<input type="password" name="password" required placeholder="••••••"></label>
+        <button type="submit" class="btn btn-primary btn-block">Giriş Yap</button>
+        <p class="auth-hint">Demo admin: <code>admin@shop.com</code> / <code>admin123</code></p>
+    </form>
+    <form id="registerForm" class="auth-form hidden">
+        <label>Ad Soyad<input type="text" name="fullName" required placeholder="Adın Soyadın"></label>
+        <label>E-posta<input type="email" name="email" required></label>
+        <label>Şifre<input type="password" name="password" required minlength="6"></label>
+        <button type="submit" class="btn btn-primary btn-block">Kayıt Ol</button>
+    </form>
+</dialog>
+
+<dialog class="modal" id="productModal">
+    <button class="btn-icon modal-close" id="closeProduct">&times;</button>
+    <h3 id="productModalTitle">Ürün</h3>
+    <form id="productForm" class="auth-form">
+        <input type="hidden" name="id">
+        <label>Ad<input type="text" name="name" required></label>
+        <label>Açıklama<textarea name="description" rows="2"></textarea></label>
+        <label>Fiyat (₺)<input type="number" name="price" step="0.01" min="0.01" required></label>
+        <label>Stok<input type="number" name="stockQuantity" min="0" required></label>
+        <label>Kategori<select name="categoryId" id="productCategorySelect" required></select></label>
+        <label id="productImageField" class="hidden">Ürün Görseli<input type="file" name="image" id="productImageInput" accept="image/png,image/jpeg,image/webp"></label>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+    </form>
+</dialog>
+
+<dialog class="modal" id="profileModal">
+    <button class="btn-icon modal-close" id="closeProfile">&times;</button>
+    <h3>Profilim</h3>
+    <div id="profileContent" class="profile-content"></div>
+</dialog>
+
+<dialog class="modal" id="resetPasswordModal">
+    <button class="btn-icon modal-close" id="closeResetPassword">&times;</button>
+    <h3>Şifre Sıfırla</h3>
+    <form id="resetPasswordForm" class="auth-form">
+        <label>Yeni şifre<input type="password" name="newPassword" minlength="6" required></label>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+    </form>
+</dialog>
+
+<dialog class="modal" id="forgotPasswordModal">
+    <button class="btn-icon modal-close" id="closeForgotPassword">&times;</button>
+    <h3>Şifremi Unuttum</h3>
+    <form id="forgotPasswordForm" class="auth-form">
+        <label>E-posta<input type="email" name="email" required></label>
+        <button type="submit" class="btn btn-primary btn-block">Sıfırlama linki gönder</button>
+    </form>
+</dialog>
+
+<dialog class="modal" id="categoryModal">
+    <button class="btn-icon modal-close" id="closeCategory">&times;</button>
+    <h3 id="categoryModalTitle">Kategori</h3>
+    <form id="categoryForm" class="auth-form">
+        <input type="hidden" name="id">
+        <label>Ad<input type="text" name="name" required></label>
+        <label>Slug<input type="text" name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="ornek-kategori"></label>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+    </form>
+</dialog>
+
+<dialog class="modal" id="addressModal">
+    <button class="btn-icon modal-close" id="closeAddress">&times;</button>
+    <h3>Teslimat Adresi</h3>
+    <form id="addressForm" class="auth-form">
+        <label>Başlık<input type="text" name="title" required placeholder="Ev, İş..."></label>
+        <label>Ad Soyad<input type="text" name="fullName" required></label>
+        <label>Telefon<input type="tel" name="phone" required placeholder="05XX XXX XX XX"></label>
+        <label>İl<input type="text" name="city" required></label>
+        <label>İlçe<input type="text" name="district" required></label>
+        <label>Adres<textarea name="addressLine" rows="2" required></textarea></label>
+        <label>Posta Kodu<input type="text" name="postalCode"></label>
+        <label class="checkbox-label"><input type="checkbox" name="defaultAddress"> Varsayılan adres</label>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+    </form>
+</dialog>
+
+<div class="mobile-bottom-bar" id="mobileBottomBar">
+    <button class="mb-item active" data-view="shop"><span>🏠</span><small>Ana Sayfa</small></button>
+    <button class="mb-item" data-view="wishlist" id="mbWishlist"><span>♥</span><small>Favoriler</small></button>
+    <button class="mb-item" id="mbCart"><span>🛒</span><small>Sepet</small></button>
+    <button class="mb-item" data-view="orders" id="mbOrders"><span>📦</span><small>Siparişler</small></button>
+    <button class="mb-item" id="mbAccount"><span>👤</span><small>Hesap</small></button>
+</div>
+
+<div class="mobile-nav-drawer" id="mobileNavDrawer">
+    <div class="mobile-nav-header">
+        <strong>Menü</strong>
+        <button class="btn-icon" id="closeMobileNav">&times;</button>
+    </div>
+    <nav class="mobile-nav-links" id="mobileNavLinks"></nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/js/app.js?v=12"></script>
+</body>
+</html>

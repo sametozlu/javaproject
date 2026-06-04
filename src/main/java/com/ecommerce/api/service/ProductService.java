@@ -1,0 +1,163 @@
+package com.ecommerce.api.service;
+
+import com.ecommerce.api.domain.Category;
+import com.ecommerce.api.domain.Product;
+import com.ecommerce.api.dto.common.PageResponse;
+import com.ecommerce.api.dto.product.ProductRequest;
+import com.ecommerce.api.dto.product.ProductResponse;
+import com.ecommerce.api.exception.BadRequestException;
+import com.ecommerce.api.exception.ConflictException;
+import com.ecommerce.api.exception.ResourceNotFoundException;
+import com.ecommerce.api.mapper.ProductMapper;
+import com.ecommerce.api.repository.ProductRepository;
+import com.ecommerce.api.repository.ProductSpecifications;
+import com.ecommerce.api.repository.ReviewRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
+    private final CategoryService categoryService;
+    private final ReviewRepository reviewRepository;
+
+    @Transactional(readOnly = true)
+    public PageResponse<ProductResponse> search(
+            String query,
+            Long categoryId,
+            java.math.BigDecimal minPrice,
+            java.math.BigDecimal maxPrice,
+            int page,
+            int size,
+            String sort
+    ) {
+        Sort sorting = parseSort(sort);
+        Pageable pageable = PageRequest.of(page, size, sorting);
+        Page<Product> result = productRepository.findAll(
+                ProductSpecifications.withFilters(query, categoryId, minPrice, maxPrice, null),
+                pageable
+        );
+        return PageResponse.from(result.map(productMapper::toResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getFeatured(int size) {
+        int limit = Math.min(Math.max(size, 1), 24);
+        return productRepository.findByFeaturedTrue(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .map(productMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getBestsellers(int size) {
+        int limit = Math.min(Math.max(size, 1), 24);
+        List<Long> topIds = reviewRepository.findTopProductIdsByReviewCount(PageRequest.of(0, limit));
+        List<ProductResponse> result = new ArrayList<>();
+        for (Long id : topIds) {
+            productRepository.findById(id).ifPresent(p -> result.add(productMapper.toResponse(p)));
+        }
+        if (result.size() < limit) {
+            for (Product p : productRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent()) {
+                if (result.size() >= limit) break;
+                if (result.stream().noneMatch(r -> r.id().equals(p.getId()))) {
+                    result.add(productMapper.toResponse(p));
+                }
+            }
+        }
+        return result.stream().limit(limit).toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#id")
+    public ProductResponse findById(Long id) {
+        return productMapper.toResponse(getProduct(id));
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductResponse create(ProductRequest request) {
+        Category category = categoryService.getById(request.categoryId());
+        Product product = productMapper.toEntity(request, category);
+        return productMapper.toResponse(productRepository.save(product));
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductResponse update(Long id, ProductRequest request) {
+        Product product = getProduct(id);
+        Category category = categoryService.getById(request.categoryId());
+        productMapper.updateEntity(product, request, category);
+        return productMapper.toResponse(product);
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public void delete(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product not found: " + id);
+        }
+        productRepository.deleteById(id);
+    }
+
+    Product getProduct(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public void reserveStock(Long productId, int quantity) {
+        Product product = getProduct(productId);
+        if (product.getStockQuantity() < quantity) {
+            throw new BadRequestException("Insufficient stock for product: " + product.getName());
+        }
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+        try {
+            productRepository.saveAndFlush(product);
+        } catch (OptimisticLockingFailureException ex) {
+            throw new ConflictException("Stock updated by another order. Please try again.");
+        }
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public void restoreStock(Long productId, int quantity) {
+        Product product = getProduct(productId);
+        product.setStockQuantity(product.getStockQuantity() + quantity);
+        productRepository.save(product);
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductResponse updateImage(Long id, String imageUrl) {
+        Product product = getProduct(id);
+        product.setImageUrl(imageUrl);
+        return productMapper.toResponse(product);
+    }
+
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+        String[] parts = sort.split(",");
+        String field = parts[0].trim();
+        Sort.Direction direction = parts.length > 1 && parts[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        return Sort.by(direction, field);
+    }
+}
