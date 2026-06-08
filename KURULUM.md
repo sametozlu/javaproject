@@ -18,8 +18,19 @@ Bu kadar. Veritabanı (H2), ürünler ve demo ödeme hazır gelir.
 | Ne | Neden | Ne zaman |
 |----|--------|----------|
 | **Stripe** | Gerçek sandbox ödeme sekmesi | [Stripe test keys](https://dashboard.stripe.com/test/apikeys) alıp `.env` içine `STRIPE_SECRET_KEY` ve `STRIPE_PUBLISHABLE_KEY` yaz, uygulamayı yeniden başlat |
-| **Render canlı site** | İnternetten demo link | [render.com](https://render.com) → Blueprint → `javaproject` repo → `docs/DEPLOY.md` |
+| **Render canlı site** | İnternetten demo link | Aşağıdaki 4 adım (~5 dk) |
 | **E-posta** | Kargo maili görmek | Docker varsa `baslat.ps1` MailHog’u açar → http://localhost:8025 |
+
+---
+
+## Render canlı demo (5 dakika)
+
+1. https://dashboard.render.com → giriş (GitHub ile)
+2. **New** → **Blueprint**
+3. Repo: `sametozlu/javaproject` → **Apply**
+4. Deploy bitince aç: **https://shopflow-api.onrender.com**
+
+İlk açılış 1–2 dk sürebilir (ücretsiz plan soğuk start).
 
 ---
 

@@ -4,6 +4,7 @@ import com.ecommerce.api.domain.*;
 import com.ecommerce.api.repository.AddressRepository;
 import com.ecommerce.api.repository.CategoryRepository;
 import com.ecommerce.api.repository.CouponRepository;
+import com.ecommerce.api.repository.ProductImageRepository;
 import com.ecommerce.api.repository.ProductRepository;
 import com.ecommerce.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -169,6 +170,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final CouponRepository couponRepository;
     private final AddressRepository addressRepository;
+    private final ProductImageRepository productImageRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -177,6 +179,7 @@ public class DataInitializer implements CommandLineRunner {
         seedDemoAddress();
         Map<String, Category> categories = seedCategories();
         seedProducts(categories);
+        seedProductGalleries();
         seedCoupons();
     }
 
@@ -266,6 +269,33 @@ public class DataInitializer implements CommandLineRunner {
         markFeaturedProducts();
         log.info("Catalog ready — {} categories, {} products (+{} new, {} images refreshed)",
                 categories.size(), productRepository.count(), created, updated);
+    }
+
+    private void seedProductGalleries() {
+        int seeded = 0;
+        for (Product product : productRepository.findAll()) {
+            if (productImageRepository.existsByProductId(product.getId())) {
+                continue;
+            }
+            String baseSeed = "p" + Math.abs(product.getName().hashCode());
+            String primary = product.getImageUrl() != null && !product.getImageUrl().isBlank()
+                    ? product.getImageUrl()
+                    : imageUrl(baseSeed);
+            if (product.getImageUrl() == null || product.getImageUrl().isBlank()) {
+                product.setImageUrl(primary);
+                productRepository.save(product);
+            }
+            productImageRepository.save(ProductImage.builder()
+                    .product(product).imageUrl(primary).displayOrder(0).build());
+            productImageRepository.save(ProductImage.builder()
+                    .product(product).imageUrl(imageUrl(baseSeed + "-b")).displayOrder(1).build());
+            productImageRepository.save(ProductImage.builder()
+                    .product(product).imageUrl(imageUrl(baseSeed + "-c")).displayOrder(2).build());
+            seeded++;
+        }
+        if (seeded > 0) {
+            log.info("Product galleries seeded for {} products", seeded);
+        }
     }
 
     private void markFeaturedProducts() {

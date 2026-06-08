@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css?v=15">
+    <link rel="stylesheet" href="/css/styles.css?v=16">
 </head>
 <body>
 <div class="top-bar">
@@ -173,6 +173,10 @@
                                 <button type="button" class="btn btn-primary btn-sm btn-block" id="applyPriceFilter">Uygula</button>
                                 <button type="button" class="btn btn-ghost btn-sm btn-block" id="clearPriceFilter">Temizle</button>
                             </div>
+                            <label class="filter-check">
+                                <input type="checkbox" id="inStockOnly">
+                                <span>Sadece stokta olanlar</span>
+                            </label>
                         </div>
                         <div class="sidebar-box sidebar-promo">
                             <strong>🎁 Hediye Kuponu</strong>
@@ -191,6 +195,7 @@
                                     Sırala
                                     <select id="sortSelect">
                                         <option value="newest">En Yeni</option>
+                                        <option value="popular">En Popüler</option>
                                         <option value="price-asc">Fiyat: Düşük → Yüksek</option>
                                         <option value="price-desc">Fiyat: Yüksek → Düşük</option>
                                         <option value="name">İsme Göre</option>
@@ -612,7 +617,7 @@
         <label>Fiyat (₺)<input type="number" name="price" step="0.01" min="0.01" required></label>
         <label>Stok<input type="number" name="stockQuantity" min="0" required></label>
         <label>Kategori<select name="categoryId" id="productCategorySelect" required></select></label>
-        <label id="productImageField" class="hidden">Ürün Görseli<input type="file" name="image" id="productImageInput" accept="image/png,image/jpeg,image/webp"></label>
+        <label id="productImageField" class="hidden">Ürün Görselleri (ilk ana görsel)<input type="file" name="image" id="productImageInput" accept="image/png,image/jpeg,image/webp" multiple></label>
         <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
     </form>
 </dialog>
@@ -688,6 +693,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
-<script src="/js/app.js?v=15"></script>
+<script src="/js/app.js?v=16"></script>
 </body>
 </html>

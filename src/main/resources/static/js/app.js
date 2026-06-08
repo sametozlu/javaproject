@@ -27,6 +27,7 @@ const state = {
     search: '',
     minPrice: null,
     maxPrice: null,
+    inStockOnly: false,
     categoryId: null,
     page: 0,
     totalPages: 0,
@@ -47,6 +48,7 @@ let stripeCardElement = null;
 
 const SORT_MAP = {
     newest: 'createdAt,desc',
+    popular: 'popular',
     'price-asc': 'price,asc',
     'price-desc': 'price,desc',
     name: 'name,asc',
@@ -83,13 +85,9 @@ function getProductImage(p) {
     return `https://picsum.photos/seed/shopflow-${encodeURIComponent(`${p.id}-${p.name || 'p'}`)}/600/450`;
 }
 function getProductGallery(p) {
+    if (p.imageUrls?.length) return [...new Set(p.imageUrls)];
     const main = getProductImage(p);
-    if (p.imageUrl) return [main, `${p.imageUrl}?v=2`, `${p.imageUrl}?v=3`].filter((v, i, a) => a.indexOf(v) === i);
-    return [
-        main,
-        `https://picsum.photos/seed/shopflow-${p.id}-b/600/450`,
-        `https://picsum.photos/seed/shopflow-${p.id}-c/600/450`,
-    ];
+    return [main];
 }
 
 const ADMIN_STAT_LABELS = {
@@ -452,6 +450,7 @@ async function loadProducts() {
     if (state.categoryId) params.set('categoryId', state.categoryId);
     if (state.minPrice != null) params.set('minPrice', state.minPrice);
     if (state.maxPrice != null) params.set('maxPrice', state.maxPrice);
+    if (state.inStockOnly) params.set('inStock', 'true');
     try {
         const data = await api(`/api/products?${params}`);
         state.products = data.content || [];
@@ -1181,13 +1180,21 @@ function bindEvents() {
     $('#applyPriceFilter')?.addEventListener('click', () => {
         state.minPrice = $('#minPrice')?.value ? Number($('#minPrice').value) : null;
         state.maxPrice = $('#maxPrice')?.value ? Number($('#maxPrice').value) : null;
+        state.inStockOnly = !!$('#inStockOnly')?.checked;
         state.page = 0; loadProducts();
     });
     $('#clearPriceFilter')?.addEventListener('click', () => {
         state.minPrice = state.maxPrice = null;
+        state.inStockOnly = false;
         if ($('#minPrice')) $('#minPrice').value = '';
         if ($('#maxPrice')) $('#maxPrice').value = '';
+        if ($('#inStockOnly')) $('#inStockOnly').checked = false;
         state.page = 0; loadProducts();
+    });
+    $('#inStockOnly')?.addEventListener('change', () => {
+        state.inStockOnly = !!$('#inStockOnly')?.checked;
+        state.page = 0;
+        loadProducts();
     });
     $('#cartBtn')?.addEventListener('click', openCart);
     $('#closeCart')?.addEventListener('click', closeCart);
@@ -1336,13 +1343,16 @@ function bindEvents() {
             let product;
             if (id) product = await api(`/api/products/${id}`, { method: 'PUT', body: JSON.stringify(body) });
             else product = await api('/api/products', { method: 'POST', body: JSON.stringify(body) });
-            const file = $('#productImageInput')?.files?.[0];
-            if (file && product?.id) {
-                const imgFd = new FormData();
-                imgFd.append('file', file);
+            const files = [...($('#productImageInput')?.files || [])];
+            if (files.length && product?.id) {
                 const headers = { Authorization: `Bearer ${state.token}` };
-                const res = await fetch(`${API}/api/products/${product.id}/image`, { method: 'POST', headers, body: imgFd });
-                if (!res.ok) throw new Error('Görsel yüklenemedi');
+                for (let i = 0; i < files.length; i++) {
+                    const imgFd = new FormData();
+                    imgFd.append('file', files[i]);
+                    const path = i === 0 ? 'image' : 'images';
+                    const res = await fetch(`${API}/api/products/${product.id}/${path}`, { method: 'POST', headers, body: imgFd });
+                    if (!res.ok) throw new Error('Görsel yüklenemedi');
+                }
             }
             $('#productModal').close();
             toast('Ürün kaydedildi');

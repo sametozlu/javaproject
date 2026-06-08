@@ -13,7 +13,8 @@ public final class ProductSpecifications {
             Long categoryId,
             java.math.BigDecimal minPrice,
             java.math.BigDecimal maxPrice,
-            Boolean featured
+            Boolean featured,
+            Boolean inStock
     ) {
         return (root, query, cb) -> {
             Class<?> resultType = query.getResultType();
@@ -45,6 +46,9 @@ public final class ProductSpecifications {
             }
             if (Boolean.TRUE.equals(featured)) {
                 predicates.add(cb.isTrue(root.get("featured")));
+            }
+            if (Boolean.TRUE.equals(inStock)) {
+                predicates.add(cb.greaterThan(root.get("stockQuantity"), 0));
             }
 
             return predicates.isEmpty()

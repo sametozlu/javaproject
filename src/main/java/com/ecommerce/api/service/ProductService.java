@@ -2,6 +2,7 @@ package com.ecommerce.api.service;
 
 import com.ecommerce.api.domain.Category;
 import com.ecommerce.api.domain.Product;
+import com.ecommerce.api.domain.ProductImage;
 import com.ecommerce.api.dto.common.PageResponse;
 import com.ecommerce.api.dto.product.ProductRequest;
 import com.ecommerce.api.dto.product.ProductResponse;
@@ -9,6 +10,7 @@ import com.ecommerce.api.exception.BadRequestException;
 import com.ecommerce.api.exception.ConflictException;
 import com.ecommerce.api.exception.ResourceNotFoundException;
 import com.ecommerce.api.mapper.ProductMapper;
+import com.ecommerce.api.repository.ProductImageRepository;
 import com.ecommerce.api.repository.ProductRepository;
 import com.ecommerce.api.repository.ProductSpecifications;
 import com.ecommerce.api.repository.ReviewRepository;
@@ -31,6 +33,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final ProductMapper productMapper;
     private final CategoryService categoryService;
     private final ReviewRepository reviewRepository;
@@ -41,14 +44,19 @@ public class ProductService {
             Long categoryId,
             java.math.BigDecimal minPrice,
             java.math.BigDecimal maxPrice,
+            Boolean inStock,
             int page,
             int size,
             String sort
     ) {
+        if (isPopularSort(sort) && !hasFilters(query, categoryId, minPrice, maxPrice, inStock)) {
+            return searchPopular(page, size);
+        }
+
         Sort sorting = parseSort(sort);
         Pageable pageable = PageRequest.of(page, size, sorting);
         Page<Product> result = productRepository.findAll(
-                ProductSpecifications.withFilters(query, categoryId, minPrice, maxPrice, null),
+                ProductSpecifications.withFilters(query, categoryId, minPrice, maxPrice, null, inStock),
                 pageable
         );
         return PageResponse.from(result.map(productMapper::toResponse));
@@ -146,11 +154,66 @@ public class ProductService {
     public ProductResponse updateImage(Long id, String imageUrl) {
         Product product = getProduct(id);
         product.setImageUrl(imageUrl);
+        addGalleryImage(product, imageUrl, true);
         return productMapper.toResponse(product);
     }
 
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductResponse addGalleryImage(Long id, String imageUrl) {
+        Product product = getProduct(id);
+        addGalleryImage(product, imageUrl, false);
+        if (product.getImageUrl() == null || product.getImageUrl().isBlank()) {
+            product.setImageUrl(imageUrl);
+        }
+        return productMapper.toResponse(product);
+    }
+
+    private void addGalleryImage(Product product, String imageUrl, boolean primary) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+        boolean exists = productImageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(product.getId())
+                .stream()
+                .anyMatch(img -> imageUrl.equals(img.getImageUrl()));
+        if (exists) {
+            return;
+        }
+        int order = primary ? 0 : (int) productImageRepository.countByProductId(product.getId());
+        productImageRepository.save(ProductImage.builder()
+                .product(product)
+                .imageUrl(imageUrl)
+                .displayOrder(order)
+                .build());
+    }
+
+    private PageResponse<ProductResponse> searchPopular(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Long> ids = reviewRepository.findTopProductIdsByReviewCount(pageable);
+        List<ProductResponse> content = new ArrayList<>();
+        for (Long id : ids) {
+            productRepository.findById(id).ifPresent(p -> content.add(productMapper.toResponse(p)));
+        }
+        long total = productRepository.count();
+        int totalPages = size == 0 ? 0 : (int) Math.ceil((double) total / size);
+        return new PageResponse<>(content, page, size, total, totalPages, page == 0, page >= totalPages - 1);
+    }
+
+    private boolean isPopularSort(String sort) {
+        return sort != null && (sort.equalsIgnoreCase("popular") || sort.equalsIgnoreCase("reviewCount,desc"));
+    }
+
+    private boolean hasFilters(String query, Long categoryId, java.math.BigDecimal minPrice,
+                               java.math.BigDecimal maxPrice, Boolean inStock) {
+        return (query != null && !query.isBlank())
+                || categoryId != null
+                || minPrice != null
+                || maxPrice != null
+                || Boolean.TRUE.equals(inStock);
+    }
+
     private Sort parseSort(String sort) {
-        if (sort == null || sort.isBlank()) {
+        if (sort == null || sort.isBlank() || isPopularSort(sort)) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
         }
         String[] parts = sort.split(",");

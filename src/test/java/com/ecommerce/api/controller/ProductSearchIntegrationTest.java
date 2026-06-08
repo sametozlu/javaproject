@@ -32,4 +32,18 @@ class ProductSearchIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").exists());
     }
+
+    @Test
+    void searchInStock_onlyAvailable() throws Exception {
+        mockMvc.perform(get("/api/products").param("inStock", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray());
+    }
+
+    @Test
+    void productDetail_includesImageUrls() throws Exception {
+        mockMvc.perform(get("/api/products").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].imageUrls").isArray());
+    }
 }

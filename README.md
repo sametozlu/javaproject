@@ -52,7 +52,7 @@ Yeniden üretmek için: `.\scripts\capture-screenshots.ps1` (localhost:8080 çal
 
 | **Ops** | Docker Compose, Render blueprint, Postman, GitHub Actions CI |
 
-| **UI** | Mağaza, galeri, benzer ürünler, yorum, sepet, demo ödeme, sipariş detay, profil, tam admin panel |
+| **UI** | Mağaza, çoklu görsel galeri, arama/sıralama/stok filtresi, sepet, ödeme, admin panel |
 | **Auth** | JWT + refresh token, password reset email |
 | **Alerts** | Stock-back-in-stock subscription |
 

@@ -39,11 +39,12 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Boolean inStock,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "12") @Min(1) @Max(50) int size,
             @RequestParam(required = false) String sort
     ) {
-        return productService.search(q, categoryId, minPrice, maxPrice, page, size, sort);
+        return productService.search(q, categoryId, minPrice, maxPrice, inStock, page, size, sort);
     }
 
     @GetMapping("/featured")
@@ -97,9 +98,17 @@ public class ProductController {
 
     @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Upload product image (admin)")
+    @Operation(summary = "Upload primary product image (admin)")
     public ProductResponse uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         String url = fileStorageService.storeProductImage(id, file);
         return productService.updateImage(id, url);
+    }
+
+    @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Add gallery image (admin)")
+    public ProductResponse uploadGalleryImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        String url = fileStorageService.storeProductImage(id, file);
+        return productService.addGalleryImage(id, url);
     }
 }

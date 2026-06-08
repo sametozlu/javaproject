@@ -5,7 +5,10 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /actuator/health
+    autoDeploy: true
     envVars:
+      - key: APP_URL
+        value: https://shopflow-api.onrender.com
       - key: SPRING_PROFILES_ACTIVE
         value: prod,render
       - key: JWT_SECRET

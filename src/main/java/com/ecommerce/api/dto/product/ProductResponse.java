@@ -2,6 +2,7 @@ package com.ecommerce.api.dto.product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record ProductResponse(
         Long id,
@@ -13,6 +14,7 @@ public record ProductResponse(
         String categoryName,
         String categorySlug,
         String imageUrl,
+        List<String> imageUrls,
         Double averageRating,
         Long reviewCount,
         Instant createdAt

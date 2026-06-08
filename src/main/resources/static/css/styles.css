@@ -1826,6 +1826,17 @@ body.dark-theme .order-status.CANCELLED { background: rgba(248,113,113,0.15); co
 .stripe-errors { color: #dc2626; font-size: 0.85rem; min-height: 1.25rem; margin-top: 0.5rem; }
 #demoPaymentPanel.hidden, #stripePaymentPanel.hidden { display: none !important; }
 
+.filter-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.filter-check input { accent-color: var(--primary); }
+
 /* ── Toast ── */
 .toast {
     position: fixed;
