@@ -4,6 +4,8 @@
 
 **https://shopflow-api-g0x5.onrender.com** · Demo admin: `admin@shop.com` / `admin123`
 
+> **İlk açılış ~30–60 sn sürebilir** (Render ücretsiz plan — “WELCOME TO RENDER” ekranı normaldir, bekleyip sayfayı yenile).
+
 [![Live Demo](https://img.shields.io/badge/Live_Demo-shopflow--api--g0x5.onrender.com-00C853?style=for-the-badge&logo=render&logoColor=white)](https://shopflow-api-g0x5.onrender.com)
 [![Java](https://img.shields.io/badge/Java-17-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green)]()
