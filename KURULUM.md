@@ -23,14 +23,13 @@ Bu kadar. Veritabanı (H2), ürünler ve demo ödeme hazır gelir.
 
 ---
 
-## Render canlı demo (5 dakika)
+## Render canlı demo (tek tık)
 
-1. https://dashboard.render.com → giriş (GitHub ile)
-2. **New** → **Blueprint**
-3. Repo: `sametozlu/javaproject` → **Apply**
-4. Deploy bitince aç: **https://shopflow-api.onrender.com**
+**`RENDER-DEPLOY.bat`** dosyasına çift tıkla → tarayıcı açılır → **Apply** / **Deploy Blueprint** de.
 
-İlk açılış 1–2 dk sürebilir (ücretsiz plan soğuk start).
+Canlı link: **https://shopflow-api.onrender.com** (deploy + soğuk start ~2–5 dk)
+
+> Render hesabına ben giremiyorum; ilk seferde GitHub ile giriş + Apply tek seferlik.
 
 ---
 

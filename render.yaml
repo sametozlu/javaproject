@@ -1,7 +1,10 @@
+# ShopFlow — Render Blueprint (tek tik deploy: RENDER-DEPLOY.bat)
 services:
   - type: web
     name: shopflow-api
     runtime: docker
+    repo: https://github.com/sametozlu/javaproject
+    branch: main
     dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /actuator/health
