@@ -12,7 +12,7 @@ Write-Host "  1) Render'a GitHub ile gir (ilk seferde)"
 Write-Host "  2) 'Apply' veya 'Deploy Blueprint' tikla"
 Write-Host ""
 Write-Host "  Canli link (deploy sonrasi):"
-Write-Host "  https://shopflow-api.onrender.com"
+Write-Host "  https://shopflow-api-g0x5.onrender.com"
 Write-Host ""
 
 Start-Process $deployUrl

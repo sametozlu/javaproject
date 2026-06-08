@@ -27,7 +27,7 @@ Bu kadar. Veritabanı (H2), ürünler ve demo ödeme hazır gelir.
 
 **`RENDER-DEPLOY.bat`** dosyasına çift tıkla → tarayıcı açılır → **Apply** / **Deploy Blueprint** de.
 
-Canlı link: **https://shopflow-api.onrender.com** (deploy + soğuk start ~2–5 dk)
+Canlı link: **https://shopflow-api-g0x5.onrender.com** (deploy + soğuk start ~2–5 dk)
 
 > Render hesabına ben giremiyorum; ilk seferde GitHub ile giriş + Apply tek seferlik.
 

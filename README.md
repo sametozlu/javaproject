@@ -10,7 +10,7 @@
 
 **Repo:** https://github.com/sametozlu/javaproject
 
-**Canlı demo (Render):** https://shopflow-api.onrender.com
+**Canlı demo (Render):** https://shopflow-api-g0x5.onrender.com
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sametozlu/javaproject) · Yerelde: `RENDER-DEPLOY.bat` çift tık
 
