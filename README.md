@@ -1,18 +1,17 @@
 # ShopFlow E-Commerce API
 
+## 🚀 [Canlı Demo — Hemen Dene](https://shopflow-api-g0x5.onrender.com)
 
+**https://shopflow-api-g0x5.onrender.com** · Demo admin: `admin@shop.com` / `admin123`
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-shopflow--api--g0x5.onrender.com-00C853?style=for-the-badge&logo=render&logoColor=white)](https://shopflow-api-g0x5.onrender.com)
 [![Java](https://img.shields.io/badge/Java-17-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green)]()
 [![License](https://img.shields.io/badge/License-MIT-blue)]()
 [![CI](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml/badge.svg)](https://github.com/sametozlu/javaproject/actions/workflows/ci.yml)
 [![E2E](https://github.com/sametozlu/javaproject/actions/workflows/e2e.yml/badge.svg)](https://github.com/sametozlu/javaproject/actions/workflows/e2e.yml)
 
-**Repo:** https://github.com/sametozlu/javaproject
-
-**Canlı demo (Render):** https://shopflow-api-g0x5.onrender.com
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sametozlu/javaproject) · Yerelde: `RENDER-DEPLOY.bat` çift tık
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sametozlu/javaproject)
 
 
 
